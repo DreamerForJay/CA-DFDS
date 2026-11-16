@@ -5,91 +5,109 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CA-DFDS: Color-Aware Depth from Defocus with Segmentation</title>
 <meta name="description" content="CA-DFDS estimates vehicle distance from a single defocused image by focusing behind the measuring range and computing CIECAM02 perceptual sharpness inside the vehicle mask.">
+<meta property="og:title" content="CA-DFDS: Color-Aware Depth from Defocus with Segmentation">
+<meta property="og:description" content="Monocular vehicle distance from one defocused image — back-focused optics + CIECAM02 perceptual sharpness.">
+<meta property="og:image" content="assets/intro_poster.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#ffffff; --surface:#f3f6fa; --card:#ffffff; --ink:#16181d; --muted:#5a616b; --faint:#8a929c; --rule:#dfe5ec;
-  --accent:#1f4e79; --accent-2:#2e6da4; --accent-soft:#eaf1f8; --chip:#bdd7ee; --ours:#c62828; --ours-soft:#fdecec;
-  --shadow:0 1px 2px rgba(20,10,10,.05),0 6px 24px rgba(60,20,20,.06);
+  --bg:#ffffff; --surface:#f4f7fb; --card:#ffffff; --ink:#15191f; --muted:#56606c; --faint:#8a939e; --rule:#dfe5ec;
+  --accent:#1f4e79; --accent-2:#2e6da4; --accent-soft:#eaf1f8; --zebra:#f3f6fa; --ours:#c62828; --ours-soft:#fdecec;
+  --shadow:0 1px 2px rgba(15,30,50,.05),0 8px 28px rgba(15,30,50,.07);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#11151b; --surface:#18202a; --card:#1c2530; --ink:#e9eef4; --muted:#aab6c3; --faint:#7f8b98; --rule:#2c3846;
-    --accent:#7fb0e0; --accent-2:#9cc3ea; --accent-soft:#1e2c3c; --chip:#2c4a6b; --ours:#ff7a70; --ours-soft:#3a2224; --shadow:none;
+    --bg:#10141a; --surface:#171e27; --card:#1b232e; --ink:#e8edf3; --muted:#a9b5c2; --faint:#7f8b98; --rule:#2b3644;
+    --accent:#86b6e4; --accent-2:#a2c8ee; --accent-soft:#1d2b3b; --zebra:#1f2834; --ours:#ff7b70; --ours-soft:#3a2326; --shadow:none;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#11151b; --surface:#18202a; --card:#1c2530; --ink:#e9eef4; --muted:#aab6c3; --faint:#7f8b98; --rule:#2c3846;
-    --accent:#7fb0e0; --accent-2:#9cc3ea; --accent-soft:#1e2c3c; --chip:#2c4a6b; --ours:#ff7a70; --ours-soft:#3a2224; --shadow:none;
+  --bg:#10141a; --surface:#171e27; --card:#1b232e; --ink:#e8edf3; --muted:#a9b5c2; --faint:#7f8b98; --rule:#2b3644;
+  --accent:#86b6e4; --accent-2:#a2c8ee; --accent-soft:#1d2b3b; --zebra:#1f2834; --ours:#ff7b70; --ours-soft:#3a2326; --shadow:none;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Inter,"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.7 Inter,"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--accent-2);text-decoration:none} a:hover{text-decoration:underline}
 img,video{max-width:100%;display:block}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-header.hero{padding:72px 0 40px;text-align:center;background:radial-gradient(1200px 400px at 50% -10%,var(--accent-soft),transparent 70%)}
-.logo{font-size:clamp(48px,9vw,88px);font-weight:800;letter-spacing:-.03em;line-height:1;margin:0;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
-.subtitle{font-size:clamp(18px,2.4vw,23px);font-weight:500;margin:18px auto 6px;max-width:760px}
-.subtitle-zh{color:var(--muted);font-family:"Noto Sans TC",sans-serif;margin:0 0 20px}
-.badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 22px}
-.badge{font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px;background:var(--accent);color:#fff}
-.badge.soft{background:var(--accent-soft);color:var(--accent-2)}
-.authors{font-size:17px;margin:0 0 4px;display:flex;flex-wrap:wrap;justify-content:center;row-gap:2px} .authors span{margin:0 9px;white-space:nowrap}
-.affil{font-size:13.5px;color:var(--muted);margin:0} .affil span{margin:0 8px;display:inline-block}
-.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14.5px}
-.btn:hover{text-decoration:none;opacity:.88} .btn svg{width:16px;height:16px}
-.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--rule)}
-section{padding:44px 0;border-top:1px solid var(--rule)}
-h2{font-size:28px;letter-spacing:-.01em;margin:0 0 18px;display:flex;align-items:baseline;gap:12px}
-h2 .n{font:500 15px "JetBrains Mono",monospace;color:var(--accent-2)}
-h3{font-size:19px;margin:26px 0 10px}
-p{margin:0 0 14px} .muted{color:var(--muted)} .small{font-size:13.5px}
-.tldr{background:var(--surface);border-left:4px solid var(--accent);border-radius:10px;padding:16px 20px;margin:28px auto 0;max-width:860px;text-align:left}
-.tldr b{color:var(--accent-2)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 8px}
-.stat{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 14px;text-align:center;box-shadow:var(--shadow)}
-.stat .v{font-size:32px;font-weight:800;color:var(--accent-2);letter-spacing:-.02em;line-height:1.15}
-.stat .v small{font-size:16px;font-weight:600;color:var(--accent)}
-.stat .l{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.4}
-figure{margin:18px 0 6px} figure img,figure video{border-radius:12px;border:1px solid var(--rule);background:#fff}
-figcaption{font-size:13.5px;color:var(--muted);margin-top:8px;text-align:center}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header.hero{padding:64px 0 26px;text-align:center}
+.logo{font-size:clamp(46px,8vw,76px);font-weight:800;letter-spacing:-.03em;line-height:1;margin:0;color:var(--accent)}
+.subtitle{font-size:clamp(19px,2.6vw,26px);font-weight:700;line-height:1.35;margin:14px auto 4px;max-width:780px}
+.subtitle-zh{color:var(--muted);font-family:"Noto Sans TC",sans-serif;font-size:15.5px;margin:0 0 18px}
+.authors{font-size:18px;margin:0 0 2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 18px}
+.authors a{color:var(--accent-2);font-weight:500}
+.authors span{color:var(--ink);font-weight:500}
+.affil{font-size:14px;color:var(--muted);margin:4px 0 0;display:flex;flex-wrap:wrap;justify-content:center;gap:0 16px}
+.venue{font-weight:700;font-size:16px;margin:14px 0 0}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:999px;background:#2b2f36;color:#fff;font-weight:600;font-size:14.5px}
+.btn:hover{text-decoration:none;background:#11151a}
+.btn svg{width:16px;height:16px}
+.btn.off{background:#c3c9d1;cursor:not-allowed}
+.teaser{margin:30px 0 8px;background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
+.teaser video{width:100%;border-radius:10px;background:#000;aspect-ratio:16/9}
+.tldr{margin:18px auto 0;max-width:860px;font-size:17px;text-align:left}
+.tldr b{color:var(--accent)}
+section{padding:46px 0 10px}
+h2{font-size:30px;letter-spacing:-.01em;margin:0 0 16px;text-align:center}
+h3{font-size:20px;margin:30px 0 10px}
+p{margin:0 0 14px} .muted{color:var(--muted)} .small{font-size:14px}
+.center{text-align:center}
+.lead{max-width:860px;margin:0 auto 14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:6px 0 4px}
+.stat{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 12px;text-align:center;box-shadow:var(--shadow)}
+.stat .v{font-size:31px;font-weight:800;letter-spacing:-.02em;line-height:1.15;color:var(--accent)}
+.stat .v.ours{color:var(--ours)}
+.stat .v small{font-size:16px;font-weight:600}
+.stat .l{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+figure{margin:16px 0 6px}
+figure img,figure video{border-radius:12px;border:1px solid var(--rule);background:#fff;width:100%}
+figcaption{font-size:14px;color:var(--muted);margin-top:8px;text-align:center}
 .zoom{cursor:zoom-in}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
-.step{background:var(--surface);border-radius:12px;padding:16px 18px}
-.step .k{font:500 13px "JetBrains Mono",monospace;color:var(--accent-2)}
-.step b{display:block;margin:4px 0 4px}
-.core{background:var(--surface);border-radius:18px;padding:28px;margin-top:8px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.step{background:var(--surface);border-radius:12px;padding:16px 18px;border-top:3px solid var(--accent)}
+.step .k{font:500 12.5px "JetBrains Mono",monospace;color:var(--accent-2);letter-spacing:.06em}
+.step b{display:block;margin:4px 0}
+.core{background:var(--surface);border-radius:18px;padding:26px 28px;margin-top:10px}
 .eyebrow{font:600 12px "JetBrains Mono",monospace;letter-spacing:.12em;color:var(--accent-2);text-transform:uppercase}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
-.eq{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:21px;text-align:center;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:16px 12px;margin:14px 0;overflow-x:auto}
+.eq{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:21px;text-align:center;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:15px 12px;margin:12px 0;overflow-x:auto}
 .eq .ours{color:var(--ours);font-weight:700}
-table{width:100%;border-collapse:collapse;font-size:15px;margin:10px 0 6px}
-th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--rule)}
-th{font-weight:600;border-bottom:2px solid var(--ink)} tr:first-child th{border-top:2px solid var(--ink)}
+.seg{display:inline-flex;flex-wrap:wrap;justify-content:center;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:4px;gap:4px;margin:6px 0 12px}
+.seg button{border:0;background:transparent;color:var(--muted);font:600 14px Inter,"Noto Sans TC",sans-serif;padding:7px 16px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.bars{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+.bar-row{display:grid;grid-template-columns:270px 1fr 56px;align-items:center;gap:12px;margin:10px 0;font-size:15px}
+.bar-track{height:22px;background:var(--zebra);border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;background:#9aa3ad;transition:width .45s ease}
+.bar-row.ours .bar-fill{background:var(--ours)} .bar-row.ours{color:var(--ours);font-weight:700}
+.bar-val{text-align:right;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto;border-radius:12px;border:1px solid var(--rule);margin:10px 0 6px}
+table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
+th,td{padding:10px 12px;text-align:center}
+thead th{background:var(--accent);color:#fff;font-weight:600}
+:root[data-theme="dark"] thead th{color:#10141a}
+thead th.ours{background:var(--ours);color:#fff}
+tbody tr:nth-child(even) td{background:var(--zebra)}
 td:first-child,th:first-child{text-align:left}
-tr.ours td{background:var(--ours-soft);color:var(--ours);font-weight:700}
-td.ours,th.ours{background:var(--ours-soft);color:var(--ours);font-weight:700}
-.tbl{overflow-x:auto}
-.apps{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
-.app{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
-.app h4{margin:0 0 4px;font-size:17px;color:var(--accent)}
-.app q{display:block;color:var(--accent-2);font-weight:600;font-size:14.5px;margin-bottom:6px;quotes:"“" "”"}
-.app p{margin:0;font-size:14.5px;color:var(--muted)}
-.limit{background:var(--surface);border-radius:12px;padding:16px 20px;font-size:14.5px;color:var(--muted)}
-footer{padding:36px 0 56px;border-top:1px solid var(--rule);font-size:13px;color:var(--faint);text-align:center}
+tbody tr.ours td{background:var(--ours-soft);color:var(--ours);font-weight:700}
+tbody td.ours{background:var(--ours-soft)!important;color:var(--ours);font-weight:700}
+.apps{display:grid;gap:12px;margin-top:6px}
+.app{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:12px;padding:16px 20px}
+.app h4{margin:0;font-size:17px;color:var(--accent)}
+.app p{margin:0;font-size:15px;color:var(--muted)}
+.limit{background:var(--surface);border-radius:12px;padding:16px 20px;font-size:15px;color:var(--muted)}
+footer{margin-top:40px;padding:30px 0 50px;border-top:1px solid var(--rule);font-size:13px;color:var(--faint);text-align:center}
 .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:10;cursor:zoom-out}
 .lightbox.on{display:flex} .lightbox img{max-height:94vh;border-radius:8px;background:#fff}
 .theme{position:fixed;top:14px;right:14px;z-index:5;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
-.video-slot{aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid var(--rule);background:#000}
-.video-slot iframe{width:100%;height:100%;border:0}
 @media (max-width:760px){
-  .stats{grid-template-columns:1fr 1fr} .steps,.two,.apps{grid-template-columns:1fr}
-  header.hero{padding:56px 0 30px} .core{padding:20px} .eq{font-size:17px} h2{font-size:24px}
+  .stats{grid-template-columns:1fr 1fr} .steps,.two{grid-template-columns:1fr}
+  .app{grid-template-columns:1fr;gap:4px} .bar-row{grid-template-columns:1fr 54px} .bar-row .bar-label{grid-column:1 / -1}
+  header.hero{padding:52px 0 20px} .core{padding:20px} .eq{font-size:17px} h2{font-size:25px}
 }
 </style>
 </head>
@@ -99,46 +117,46 @@ footer{padding:36px 0 56px;border-top:1px solid var(--rule);font-size:13px;color
 <header class="hero">
   <div class="wrap">
     <h1 class="logo">CA-DFDS</h1>
-    <p class="subtitle">Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance Estimation</p>
+    <p class="subtitle">Color-Aware Depth from Defocus with Segmentation<br>for Monocular Vehicle Distance Estimation</p>
     <p class="subtitle-zh">結合色彩感知、影像分割與物理光學之單眼失焦車距估測系統</p>
-    <div class="badges">
-      <span class="badge">2026 全國大專院校產學創新實作競賽 · 決賽 D86</span>
+    <div class="authors">
+      <span>Yu-Sen Wang<sup>1</sup></span>
+      <a href="https://www.rit.edu/directory/clkiee-chunghui-kuo" target="_blank" rel="noopener">Chunghui Kuo<sup>2</sup></a>
+      <a href="https://xn--zwq108c.tw/research/" target="_blank" rel="noopener">Chieh-Lun Yang<sup>3</sup></a>
+      <a href="https://people.csie.ncue.edu.tw/icchang/" target="_blank" rel="noopener">Ing-Chau Chang<sup>3</sup></a>
     </div>
-    <p class="authors"><span>Yu-Sen Wang<sup>1</sup></span><span>Chunghui Kuo<sup>2</sup></span><span>Chieh-Lun Yang<sup>3</sup></span><span>Ing-Chau Chang<sup>3</sup></span></p>
-    <p class="affil"><span><sup>1</sup> Dept. of Engineering Science and Ocean Engineering, National Taiwan University</span><span><sup>2</sup> Rochester Institute of Technology</span><span><sup>3</sup> Dept. of Computer Science and Information Engineering, National Changhua University of Education</span></p>
+    <div class="affil"><span><sup>1</sup>National Taiwan University</span><span><sup>2</sup>Rochester Institute of Technology</span><span><sup>3</sup>National Changhua University of Education</span></div>
+    <p class="venue">2026 全國大專院校產學創新實作競賽 · 決賽 D86</p>
     <div class="btns">
-      <a class="btn" href="#video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Video</a>
+      <a class="btn" href="#video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>Video</a>
       <a class="btn" href="#demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>Demo</a>
-      <a class="btn ghost" href="assets/poster.pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Poster</a>
+      <a class="btn" href="assets/poster.pdf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Poster</a>
+      <span class="btn off" title="Code release pending"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1a3.6 3.6 0 0 1 .1 2.7 3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>Code (soon)</span>
     </div>
-    <div class="tldr"><b>TL;DR</b>&nbsp; CA-DFDS measures how blurred a vehicle is in <b>one</b> photo: the lens is focused <b>behind</b> the 1–7 m range so blur changes in only one direction, sharpness is computed in the <b>CIECAM02</b> perceptual color space inside the vehicle mask, and a calibration curve turns sharpness into distance.</div>
+
+    <div class="teaser" id="video"><div id="ytSlot"></div></div>
+    <p class="tldr"><b>TL;DR</b>&nbsp; One photo, one camera: focusing the lens <b>behind</b> the 1–7 m range makes blur change in a single direction, and measuring sharpness in the <b>CIECAM02</b> perceptual color space inside the vehicle mask keeps the estimate stable across vehicle colors.</p>
   </div>
 </header>
 
 <main class="wrap">
   <div class="stats">
-    <div class="stat"><div class="v">0.16 <small>m</small></div><div class="l">RMSE, white vehicle<br>dual-aperture DFD ≥ 4.92 m</div></div>
-    <div class="stat"><div class="v">0.18–0.38 <small>m</small></div><div class="l">RMSE, red / green / blue<br>colors never used in calibration</div></div>
+    <div class="stat"><div class="v ours">0.16 <small>m</small></div><div class="l">RMSE, white vehicle<br>dual-aperture DFD ≥ 4.92 m</div></div>
+    <div class="stat"><div class="v ours">0.18–0.38 <small>m</small></div><div class="l">RMSE, red / green / blue<br>colors unseen in calibration</div></div>
     <div class="stat"><div class="v">&lt;0.001 <small>m</small></div><div class="l">RMSE change after<br>vertical image flip</div></div>
     <div class="stat"><div class="v">10.30 <small>cm</small></div><div class="l">RMSE, 20–110 cm real captures<br>(prior DFDS benchmark)</div></div>
   </div>
-  <p class="small muted" style="text-align:center">CARLA simulation, test distances 1.2–6.7 m; real-capture result from the prior DFDS study (Chang et al., 2026).</p>
-
-  <section id="video">
-    <h2><span class="n">01</span>Video</h2>
-    <div class="video-slot" id="ytSlot"></div>
-    <p class="small muted" id="ytNote" style="margin-top:8px"></p>
-  </section>
+  <p class="small muted center">CARLA simulation, test distances 1.2–6.7 m. Real-capture result from the prior DFDS study (Chang et al., 2026).</p>
 
   <section id="abstract">
-    <h2><span class="n">02</span>Abstract</h2>
-    <p>Monocular depth from defocus (DFD) estimates distance from blur with a single camera, which is low-cost and physically interpretable. In practice it suffers from background mixing, the near/far ambiguity on both sides of the focal plane, and grayscale sharpness that depends on object color. CA-DFDS addresses these with three steps: a segmentation mask restricts the blur measurement to the vehicle; the focal plane is placed <em>behind</em> the measuring range so a single image is unambiguous; and sharpness is computed from the CIECAM02 lightness and chroma channels, whose weights are optimized jointly with the calibration curve.</p>
-    <p>On the 20–110 cm real-capture benchmark inherited from DFDS, the mean RMSE is 10.30 cm, lower than STMAP, Depth Pro and UniDepthV2. In a 1–7 m CARLA vehicle scenario, vehicles in red, green and blue — colors never used for calibration — reach 0.18–0.38 m RMSE, and the result changes by less than 0.001 m when the image is flipped.</p>
+    <h2>Abstract</h2>
+    <p class="lead">Monocular depth from defocus (DFD) estimates distance from blur with a single camera, which is low-cost and physically interpretable. In practice it suffers from background mixing, the near/far ambiguity on both sides of the focal plane, and grayscale sharpness that depends on object color. CA-DFDS addresses these with three steps: a segmentation mask restricts the blur measurement to the vehicle; the focal plane is placed <em>behind</em> the measuring range so a single image is unambiguous; and sharpness is computed from the CIECAM02 lightness and chroma channels, whose weights are optimized jointly with the calibration curve.</p>
+    <p class="lead">On the 20–110 cm real-capture benchmark inherited from DFDS, the mean RMSE is 10.30 cm, lower than STMAP, Depth Pro and UniDepthV2. In a 1–7 m CARLA vehicle scenario, red, green and blue vehicles — colors never used for calibration — reach 0.18–0.38 m RMSE, and the result changes by less than 0.001 m when the image is flipped.</p>
   </section>
 
   <section id="method">
-    <h2><span class="n">03</span>Method</h2>
-    <figure><img class="zoom" src="assets/arch_fix.jpg" alt="CA-DFDS pipeline: (a) f/1.4 image focused at 15 m, (b) vehicle mask, (c) CIECAM02 decomposition into J, a_c, b_c, (d) masked Laplacian sharpness, (e) calibration curve to distance, (f) offline calibration" loading="lazy">
+    <h2>Method</h2>
+    <figure><img class="zoom" src="assets/arch_fix.jpg" alt="CA-DFDS pipeline: (a) f/1.4 image focused at 15 m, (b) vehicle mask, (c) CIECAM02 decomposition, (d) masked Laplacian sharpness, (e) calibration curve to distance, (f) offline calibration" loading="lazy">
       <figcaption>(a) f/1.4 image focused at 15 m · (b) vehicle mask (SAM 2 / manual) · (c)(d) CIECAM02 perceptual sharpness · (e) calibration curve → distance · (f) one-time offline calibration with white, gray and black vehicles at 13 distances. Click to enlarge.</figcaption></figure>
     <div class="steps">
       <div class="step"><span class="k">STEP 1</span><b>Single back-focused shot</b><span class="muted small">f/1.4, focus at 15 m — blur grows monotonically as the car gets closer.</span></div>
@@ -148,13 +166,14 @@ footer{padding:36px 0 56px;border-top:1px solid var(--rule);font-size:13px;color
 
     <h3>Core idea ① — focus behind the range</h3>
     <div class="core">
-      <div class="two">
-        <div>
-          <span class="eyebrow">Removing the defocus ambiguity</span>
-          <p style="margin-top:8px">If the focal plane sits inside the range (left, focus 7 m), objects in front of and behind it can show the same blur. Moving focus to 15 m (right) makes blur change in one direction across 1–7 m, so one image is enough. Earlier dual-aperture DFD on the same scene had errors above 4.9 m; the back-focused single-shot design brings the white vehicle to 0.16 m.</p>
-        </div>
-        <figure style="margin:0"><img class="zoom" src="assets/defocus.jpg" alt="Theoretical circle-of-confusion curves for focus at 7 m and 15 m at several apertures" loading="lazy"><figcaption>Theoretical blur vs. distance (left: focus 7 m, right: focus 15 m); f/1.4 is the most distance-sensitive.</figcaption></figure>
-      </div>
+      <span class="eyebrow">Removing the defocus ambiguity</span>
+      <p style="margin-top:8px">If the focal plane sits inside the range, objects in front of and behind it can show the same blur. Moving focus to 15 m makes blur change in one direction across 1–7 m, so one image is enough. Earlier dual-aperture DFD on the same scene had errors above 4.9 m; the back-focused single-shot design brings the white vehicle to 0.16 m.</p>
+      <div class="center"><div class="seg" role="group" aria-label="Focus distance">
+        <button type="button" data-focus="7m" aria-pressed="false">Focus at 7 m</button>
+        <button type="button" data-focus="15m" aria-pressed="true">Focus at 15 m (ours)</button>
+      </div></div>
+      <figure style="margin:0 auto;max-width:640px"><img id="focusImg" class="zoom" src="assets/defocus_15m.jpg" alt="Theoretical blur vs. distance for several apertures, focus at 15 m" loading="lazy">
+        <figcaption id="focusCap">Focus at 15 m: blur decreases monotonically over 1–7 m — no ambiguity. f/1.4 is the most distance-sensitive.</figcaption></figure>
     </div>
 
     <h3>Core idea ② — CIECAM02 perceptual sharpness</h3>
@@ -165,74 +184,116 @@ footer{padding:36px 0 56px;border-top:1px solid var(--rule);font-size:13px;color
         <span class="small muted" style="font-family:Inter,sans-serif">optimized (w<sub>J</sub>, w<sub>a</sub>, w<sub>b</sub>) = (0.8136, 0.1782, 0.0081), calibrated on white, gray and black vehicles</span></div>
       <div class="eq"><span class="ours">d = −6.562σ² + 128.83σ + 68.39</span> &nbsp;(cm), &nbsp; R² = 0.969</div>
       <div class="two">
-        <figure style="margin:0"><img class="zoom" src="assets/calib.jpg" alt="Calibration curve of sharpness versus distance for white, black and gray vehicles" loading="lazy"><figcaption>Calibration: sharpness σ vs. distance.</figcaption></figure>
+        <figure style="margin:0"><img class="zoom" src="assets/calib.jpg" alt="Calibration curve of sharpness versus distance" loading="lazy"><figcaption>Calibration: sharpness σ vs. distance.</figcaption></figure>
         <figure style="margin:0"><img class="zoom" src="assets/cars.jpg" alt="CARLA test vehicles in different colors" loading="lazy"><figcaption>CARLA test vehicles in different colors.</figcaption></figure>
       </div>
     </div>
   </section>
 
   <section id="results">
-    <h2><span class="n">04</span>Results</h2>
-    <p class="muted">CARLA scenario, test distances 1.2–6.7 m. Calibration uses only white, gray and black vehicles; red, green and blue are unseen colors.</p>
-    <figure style="max-width:860px;margin-left:auto;margin-right:auto"><img class="zoom" src="assets/bar_en.jpg" alt="Bar chart of RMSE per vehicle color for four sharpness measures; the optimized CIECAM weights give 0.24, 0.18, 0.38 and 0.52 m" loading="lazy"><figcaption>RMSE (m) per vehicle color for each sharpness measure. Red: ours. † black is a calibration color.</figcaption></figure>
+    <h2>Results</h2>
+    <p class="lead center muted">CARLA, test distances 1.2–6.7 m. Calibration uses only white, gray and black vehicles; red, green and blue are unseen colors.</p>
+    <div class="bars">
+      <div class="center"><div class="seg" role="group" aria-label="Vehicle color" id="colorSeg">
+        <button type="button" data-c="0" aria-pressed="false">Red</button>
+        <button type="button" data-c="1" aria-pressed="true">Green</button>
+        <button type="button" data-c="2" aria-pressed="false">Blue</button>
+        <button type="button" data-c="3" aria-pressed="false">Black†</button>
+      </div></div>
+      <div id="barRows"></div>
+      <p class="small muted center" style="margin:8px 0 0">RMSE (m) of each sharpness measure for the selected vehicle color — shorter is better. † black is a calibration color.</p>
+    </div>
+
+    <h3>Sharpness measures across vehicle colors</h3>
     <div class="tbl"><table>
-      <tr><th>Sharpness measure</th><th>Red</th><th>Green</th><th>Blue</th><th>Black†</th></tr>
-      <tr><td>Grayscale Laplacian (white-calibrated)</td><td>0.27</td><td>1.16</td><td>0.39</td><td>—</td></tr>
-      <tr><td>CIECAM linear (0.6, 0.2, 0.2)</td><td>0.34</td><td>0.51</td><td>1.21</td><td>1.06</td></tr>
-      <tr class="ours"><td>CIECAM optimized weights (ours)</td><td>0.24</td><td>0.18</td><td>0.38</td><td>0.52</td></tr>
+      <thead><tr><th>Sharpness measure</th><th>Red</th><th>Green</th><th>Blue</th><th>Black†</th></tr></thead>
+      <tbody>
+        <tr><td>Grayscale Laplacian (white-calibrated)</td><td>0.27</td><td>1.16</td><td>0.39</td><td>—</td></tr>
+        <tr><td>CIECAM linear (0.6, 0.2, 0.2)</td><td>0.34</td><td>0.51</td><td>1.21</td><td>1.06</td></tr>
+        <tr><td>CIECAM linear (0.8, 0.1, 0.1)</td><td>0.26</td><td>0.42</td><td>0.95</td><td>0.95</td></tr>
+        <tr class="ours"><td>CIECAM optimized weights (ours)</td><td>0.24</td><td>0.18</td><td>0.38</td><td>0.52</td></tr>
+      </tbody>
     </table></div>
     <p class="small muted">RMSE in metres. † calibration color.</p>
 
     <h3>Near range, real captures (20–110 cm)</h3>
     <div class="tbl"><table>
-      <tr><th>RMSE (cm)</th><th>STMAP</th><th>Depth Pro</th><th>UniDepthV2</th><th class="ours">CA-DFDS (ours)</th></tr>
-      <tr><td>Original</td><td>39.47</td><td>184.36</td><td>324.15</td><td class="ours">10.30</td></tr>
-      <tr><td>Rotated</td><td>66.36</td><td>262.42</td><td>375.39</td><td class="ours">10.96</td></tr>
+      <thead><tr><th>RMSE (cm)</th><th>STMAP</th><th>Depth Pro</th><th>UniDepthV2</th><th class="ours">CA-DFDS (ours)</th></tr></thead>
+      <tbody>
+        <tr><td>Original</td><td>39.47</td><td>184.36</td><td>324.15</td><td class="ours">10.30</td></tr>
+        <tr><td>Rotated</td><td>66.36</td><td>262.42</td><td>375.39</td><td class="ours">10.96</td></tr>
+      </tbody>
     </table></div>
     <p class="small muted">Benchmark and baselines from the prior DFDS study (Chang et al., 2026).</p>
   </section>
 
   <section id="demo">
-    <h2><span class="n">05</span>Demo: a vehicle approaching from 6.7 m to 1.2 m</h2>
+    <h2>Demo: a vehicle approaching from 6.7 m to 1.2 m</h2>
     <figure><video src="assets/demo.mp4" poster="assets/demo_new.jpg" controls muted playsinline preload="metadata"></video>
       <figcaption>Yellow: vehicle mask. Right panel: ground truth, CA-DFDS estimate and error per frame. Single-frame RMSE for red / green / blue vehicles: 0.29 / 0.20 / 0.34 m (colors not used in calibration).</figcaption></figure>
   </section>
 
   <section id="apps">
-    <h2><span class="n">06</span>Where it helps</h2>
-    <p class="muted">One ordinary camera, no LiDAR or stereo rig — distance you can explain step by step.</p>
+    <h2>Applications</h2>
     <div class="apps">
-      <div class="app"><h4>Parking assist</h4><p>A rear camera estimates the 1–7 m gap and warns the driver when it gets too close.</p></div>
-      <div class="app"><h4>Warehouse AGV / forklift safety</h4><p>A front camera estimates distance to vehicles and obstacles so the machine slows and stops early.</p></div>
-      <div class="app"><h4>Low-speed campus shuttles</h4><p>A single camera keeps the following gap, reducing reliance on LiDAR.</p></div>
-      <div class="app"><h4>Parking lot & yard monitoring</h4><p>Existing CCTV can estimate vehicle positions and gaps and feed a digital twin.</p></div>
+      <div class="app"><h4>Parking assist</h4><p>While reversing or parking, a rear camera estimates the 1–7 m distance to the vehicle behind and warns the driver when it gets too close.</p></div>
+      <div class="app"><h4>Warehouse AGVs &amp; forklifts</h4><p>A front camera on the vehicle estimates the distance to other vehicles and obstacles, so it can slow down or stop early inside aisles.</p></div>
+      <div class="app"><h4>Low-speed campus shuttles</h4><p>Autonomous shuttles on campuses and industrial parks keep a following distance with a single camera, reducing reliance on LiDAR.</p></div>
+      <div class="app"><h4>Parking lot &amp; yard monitoring</h4><p>Existing CCTV estimates vehicle positions and gaps for space management and feeds the result into a digital-twin platform.</p></div>
     </div>
     <p class="small muted" style="margin-top:14px">Deployment: one camera plus 13 known-distance images for calibration. Processing time 74.41 ms per image on an RTX 5080 host (grayscale-sharpness version, mask acquisition excluded).</p>
   </section>
 
   <section id="limits">
-    <h2><span class="n">07</span>Limitations</h2>
-    <div class="limit">Vehicle-distance results are from CARLA simulation over 1–7 m; the 20–110 cm real-capture results come from the prior DFDS study. Masks currently come from SAM 2 or manual annotation. Validation with a physical camera on real vehicles, longer ranges, timing of the CIECAM02 version on edge devices, and more vehicle colors are future work.</div>
+    <h2>Limitations</h2>
+    <div class="limit">Vehicle-distance results are from CARLA simulation over 1–7 m; the 20–110 cm real-capture results come from the prior DFDS study. Masks currently come from SAM 2 or manual annotation. Validation with a physical camera on real vehicles, longer ranges, timing of the CIECAM02 version on edge devices, and more vehicle types and colors are future work.</div>
   </section>
 </main>
 
-<footer>© 2026 CA-DFDS team · National Taiwan University · Rochester Institute of Technology · National Changhua University of Education</footer>
+<footer>© 2026 CA-DFDS team · National Taiwan University · Rochester Institute of Technology · National Changhua University of Education<br>Related project: <a href="https://xn--zwq108c.tw/GEMO3D/">GEMO3D</a></footer>
 
 <div class="lightbox" id="lb" role="dialog" aria-label="Enlarged figure"><img alt=""></div>
 <script>
-/* 上傳 YouTube 後把影片 ID 填在這裡（例如 https://www.youtube.com/watch?v=XXXX 的 XXXX）。留空則改播本機示範影片。 */
+/* 上傳 YouTube 後把影片 ID 填在這裡（https://www.youtube.com/watch?v=XXXX 的 XXXX）。留空則播放 assets/intro.mp4。 */
 const YOUTUBE_ID = '';
 (function(){
-  const slot = document.getElementById('ytSlot'), note = document.getElementById('ytNote');
-  if (YOUTUBE_ID) {
-    slot.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + YOUTUBE_ID + '" title="CA-DFDS video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-  } else {
-    slot.innerHTML = '<video src="assets/intro.mp4" poster="assets/intro_poster.jpg" controls playsinline preload="metadata" style="width:100%;height:100%"></video>';
+  const slot = document.getElementById('ytSlot');
+  slot.innerHTML = YOUTUBE_ID
+    ? '<div style="aspect-ratio:16/9"><iframe style="width:100%;height:100%;border:0;border-radius:10px" src="https://www.youtube-nocookie.com/embed/' + YOUTUBE_ID + '" title="CA-DFDS video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>'
+    : '<video src="assets/intro.mp4" poster="assets/intro_poster.jpg" controls playsinline preload="metadata"></video>';
+
+  const fImg = document.getElementById('focusImg'), fCap = document.getElementById('focusCap');
+  const FOCUS = { '7m': ['assets/defocus_7m.jpg', 'Focus at 7 m: blur falls to zero at 7 m and rises again behind it — the same blur can mean two distances.'],
+                  '15m': ['assets/defocus_15m.jpg', 'Focus at 15 m: blur decreases monotonically over 1–7 m — no ambiguity. f/1.4 is the most distance-sensitive.'] };
+  document.querySelectorAll('[data-focus]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-focus]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    const [src, cap] = FOCUS[b.dataset.focus]; fImg.src = src; fCap.textContent = cap;
+    fImg.alt = 'Theoretical blur vs. distance, ' + b.textContent;
+  }));
+
+  const M = [['Grayscale Laplacian (white-calibrated)', [0.27, 1.16, 0.39, null]],
+             ['CIECAM linear (0.6, 0.2, 0.2)', [0.34, 0.51, 1.21, 1.06]],
+             ['CIECAM linear (0.8, 0.1, 0.1)', [0.26, 0.42, 0.95, 0.95]],
+             ['CIECAM optimized weights (ours)', [0.24, 0.18, 0.38, 0.52]]];
+  const rows = document.getElementById('barRows'), MAX = 1.25;
+  rows.innerHTML = M.map((m, i) => '<div class="bar-row' + (i === 3 ? ' ours' : '') + '"><span class="bar-label">' + m[0] + '</span><div class="bar-track"><div class="bar-fill"></div></div><span class="bar-val"></span></div>').join('');
+  function show(c){
+    rows.querySelectorAll('.bar-row').forEach((r, i) => {
+      const v = M[i][1][c];
+      r.querySelector('.bar-fill').style.width = v == null ? '0%' : (v / MAX * 100) + '%';
+      r.querySelector('.bar-val').textContent = v == null ? 'n/a' : v.toFixed(2);
+    });
   }
+  document.querySelectorAll('#colorSeg button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#colorSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); show(+b.dataset.c);
+  }));
+  show(1);
+
   const lb = document.getElementById('lb'), li = lb.querySelector('img');
   document.querySelectorAll('img.zoom').forEach(im => im.addEventListener('click', () => { li.src = im.src; li.alt = im.alt; lb.classList.add('on'); }));
   lb.addEventListener('click', () => lb.classList.remove('on'));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+
   const btn = document.getElementById('themeBtn'), root = document.documentElement;
   try { const t = localStorage.getItem('cadfds-theme'); if (t) root.dataset.theme = t; } catch (e) {}
   btn.addEventListener('click', () => {
