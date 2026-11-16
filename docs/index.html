@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CA-DFDS: Color-Aware Depth from Defocus with Segmentation</title>
+<meta name="description" content="CA-DFDS estimates vehicle distance from a single defocused image by focusing behind the measuring range and computing CIECAM02 perceptual sharpness inside the vehicle mask.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff; --surface:#f3f6fa; --card:#ffffff; --ink:#16181d; --muted:#5a616b; --faint:#8a929c; --rule:#dfe5ec;
+  --accent:#1f4e79; --accent-2:#2e6da4; --accent-soft:#eaf1f8; --chip:#bdd7ee; --ours:#c62828; --ours-soft:#fdecec;
+  --shadow:0 1px 2px rgba(20,10,10,.05),0 6px 24px rgba(60,20,20,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11151b; --surface:#18202a; --card:#1c2530; --ink:#e9eef4; --muted:#aab6c3; --faint:#7f8b98; --rule:#2c3846;
+    --accent:#7fb0e0; --accent-2:#9cc3ea; --accent-soft:#1e2c3c; --chip:#2c4a6b; --ours:#ff7a70; --ours-soft:#3a2224; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11151b; --surface:#18202a; --card:#1c2530; --ink:#e9eef4; --muted:#aab6c3; --faint:#7f8b98; --rule:#2c3846;
+    --accent:#7fb0e0; --accent-2:#9cc3ea; --accent-soft:#1e2c3c; --chip:#2c4a6b; --ours:#ff7a70; --ours-soft:#3a2224; --shadow:none;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 Inter,"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-2);text-decoration:none} a:hover{text-decoration:underline}
+img,video{max-width:100%;display:block}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.hero{padding:72px 0 40px;text-align:center;background:radial-gradient(1200px 400px at 50% -10%,var(--accent-soft),transparent 70%)}
+.logo{font-size:clamp(48px,9vw,88px);font-weight:800;letter-spacing:-.03em;line-height:1;margin:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.subtitle{font-size:clamp(18px,2.4vw,23px);font-weight:500;margin:18px auto 6px;max-width:760px}
+.subtitle-zh{color:var(--muted);font-family:"Noto Sans TC",sans-serif;margin:0 0 20px}
+.badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 22px}
+.badge{font-size:13px;font-weight:600;padding:6px 14px;border-radius:999px;background:var(--accent);color:#fff}
+.badge.soft{background:var(--accent-soft);color:var(--accent-2)}
+.authors{font-size:17px;margin:0 0 4px;display:flex;flex-wrap:wrap;justify-content:center;row-gap:2px} .authors span{margin:0 9px;white-space:nowrap}
+.affil{font-size:13.5px;color:var(--muted);margin:0} .affil span{margin:0 8px;display:inline-block}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:600;font-size:14.5px}
+.btn:hover{text-decoration:none;opacity:.88} .btn svg{width:16px;height:16px}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--rule)}
+section{padding:44px 0;border-top:1px solid var(--rule)}
+h2{font-size:28px;letter-spacing:-.01em;margin:0 0 18px;display:flex;align-items:baseline;gap:12px}
+h2 .n{font:500 15px "JetBrains Mono",monospace;color:var(--accent-2)}
+h3{font-size:19px;margin:26px 0 10px}
+p{margin:0 0 14px} .muted{color:var(--muted)} .small{font-size:13.5px}
+.tldr{background:var(--surface);border-left:4px solid var(--accent);border-radius:10px;padding:16px 20px;margin:28px auto 0;max-width:860px;text-align:left}
+.tldr b{color:var(--accent-2)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 8px}
+.stat{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 14px;text-align:center;box-shadow:var(--shadow)}
+.stat .v{font-size:32px;font-weight:800;color:var(--accent-2);letter-spacing:-.02em;line-height:1.15}
+.stat .v small{font-size:16px;font-weight:600;color:var(--accent)}
+.stat .l{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+figure{margin:18px 0 6px} figure img,figure video{border-radius:12px;border:1px solid var(--rule);background:#fff}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:8px;text-align:center}
+.zoom{cursor:zoom-in}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.step{background:var(--surface);border-radius:12px;padding:16px 18px}
+.step .k{font:500 13px "JetBrains Mono",monospace;color:var(--accent-2)}
+.step b{display:block;margin:4px 0 4px}
+.core{background:var(--surface);border-radius:18px;padding:28px;margin-top:8px}
+.eyebrow{font:600 12px "JetBrains Mono",monospace;letter-spacing:.12em;color:var(--accent-2);text-transform:uppercase}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.eq{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:21px;text-align:center;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:16px 12px;margin:14px 0;overflow-x:auto}
+.eq .ours{color:var(--ours);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:10px 0 6px}
+th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--rule)}
+th{font-weight:600;border-bottom:2px solid var(--ink)} tr:first-child th{border-top:2px solid var(--ink)}
+td:first-child,th:first-child{text-align:left}
+tr.ours td{background:var(--ours-soft);color:var(--ours);font-weight:700}
+td.ours,th.ours{background:var(--ours-soft);color:var(--ours);font-weight:700}
+.tbl{overflow-x:auto}
+.apps{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+.app{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+.app h4{margin:0 0 4px;font-size:17px;color:var(--accent)}
+.app q{display:block;color:var(--accent-2);font-weight:600;font-size:14.5px;margin-bottom:6px;quotes:"“" "”"}
+.app p{margin:0;font-size:14.5px;color:var(--muted)}
+.limit{background:var(--surface);border-radius:12px;padding:16px 20px;font-size:14.5px;color:var(--muted)}
+footer{padding:36px 0 56px;border-top:1px solid var(--rule);font-size:13px;color:var(--faint);text-align:center}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:10;cursor:zoom-out}
+.lightbox.on{display:flex} .lightbox img{max-height:94vh;border-radius:8px;background:#fff}
+.theme{position:fixed;top:14px;right:14px;z-index:5;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.video-slot{aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid var(--rule);background:#000}
+.video-slot iframe{width:100%;height:100%;border:0}
+@media (max-width:760px){
+  .stats{grid-template-columns:1fr 1fr} .steps,.two,.apps{grid-template-columns:1fr}
+  header.hero{padding:56px 0 30px} .core{padding:20px} .eq{font-size:17px} h2{font-size:24px}
+}
+</style>
+</head>
+<body>
+<button class="theme" id="themeBtn" aria-label="Toggle color theme">◐ Theme</button>
+
+<header class="hero">
+  <div class="wrap">
+    <h1 class="logo">CA-DFDS</h1>
+    <p class="subtitle">Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance Estimation</p>
+    <p class="subtitle-zh">結合色彩感知、影像分割與物理光學之單眼失焦車距估測系統</p>
+    <div class="badges">
+      <span class="badge">2026 全國大專院校產學創新實作競賽 · 決賽 D86</span>
+    </div>
+    <p class="authors"><span>Yu-Sen Wang<sup>1</sup></span><span>Chunghui Kuo<sup>2</sup></span><span>Chieh-Lun Yang<sup>3</sup></span><span>Ing-Chau Chang<sup>3</sup></span></p>
+    <p class="affil"><span><sup>1</sup> Dept. of Engineering Science and Ocean Engineering, National Taiwan University</span><span><sup>2</sup> Rochester Institute of Technology</span><span><sup>3</sup> Dept. of Computer Science and Information Engineering, National Changhua University of Education</span></p>
+    <div class="btns">
+      <a class="btn" href="#video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Video</a>
+      <a class="btn" href="#demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>Demo</a>
+      <a class="btn ghost" href="assets/poster.pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Poster</a>
+    </div>
+    <div class="tldr"><b>TL;DR</b>&nbsp; CA-DFDS measures how blurred a vehicle is in <b>one</b> photo: the lens is focused <b>behind</b> the 1–7 m range so blur changes in only one direction, sharpness is computed in the <b>CIECAM02</b> perceptual color space inside the vehicle mask, and a calibration curve turns sharpness into distance.</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="v">0.16 <small>m</small></div><div class="l">RMSE, white vehicle<br>dual-aperture DFD ≥ 4.92 m</div></div>
+    <div class="stat"><div class="v">0.18–0.38 <small>m</small></div><div class="l">RMSE, red / green / blue<br>colors never used in calibration</div></div>
+    <div class="stat"><div class="v">&lt;0.001 <small>m</small></div><div class="l">RMSE change after<br>vertical image flip</div></div>
+    <div class="stat"><div class="v">10.30 <small>cm</small></div><div class="l">RMSE, 20–110 cm real captures<br>(prior DFDS benchmark)</div></div>
+  </div>
+  <p class="small muted" style="text-align:center">CARLA simulation, test distances 1.2–6.7 m; real-capture result from the prior DFDS study (Chang et al., 2026).</p>
+
+  <section id="video">
+    <h2><span class="n">01</span>Video</h2>
+    <div class="video-slot" id="ytSlot"></div>
+    <p class="small muted" id="ytNote" style="margin-top:8px"></p>
+  </section>
+
+  <section id="abstract">
+    <h2><span class="n">02</span>Abstract</h2>
+    <p>Monocular depth from defocus (DFD) estimates distance from blur with a single camera, which is low-cost and physically interpretable. In practice it suffers from background mixing, the near/far ambiguity on both sides of the focal plane, and grayscale sharpness that depends on object color. CA-DFDS addresses these with three steps: a segmentation mask restricts the blur measurement to the vehicle; the focal plane is placed <em>behind</em> the measuring range so a single image is unambiguous; and sharpness is computed from the CIECAM02 lightness and chroma channels, whose weights are optimized jointly with the calibration curve.</p>
+    <p>On the 20–110 cm real-capture benchmark inherited from DFDS, the mean RMSE is 10.30 cm, lower than STMAP, Depth Pro and UniDepthV2. In a 1–7 m CARLA vehicle scenario, vehicles in red, green and blue — colors never used for calibration — reach 0.18–0.38 m RMSE, and the result changes by less than 0.001 m when the image is flipped.</p>
+  </section>
+
+  <section id="method">
+    <h2><span class="n">03</span>Method</h2>
+    <figure><img class="zoom" src="assets/arch_fix.jpg" alt="CA-DFDS pipeline: (a) f/1.4 image focused at 15 m, (b) vehicle mask, (c) CIECAM02 decomposition into J, a_c, b_c, (d) masked Laplacian sharpness, (e) calibration curve to distance, (f) offline calibration" loading="lazy">
+      <figcaption>(a) f/1.4 image focused at 15 m · (b) vehicle mask (SAM 2 / manual) · (c)(d) CIECAM02 perceptual sharpness · (e) calibration curve → distance · (f) one-time offline calibration with white, gray and black vehicles at 13 distances. Click to enlarge.</figcaption></figure>
+    <div class="steps">
+      <div class="step"><span class="k">STEP 1</span><b>Single back-focused shot</b><span class="muted small">f/1.4, focus at 15 m — blur grows monotonically as the car gets closer.</span></div>
+      <div class="step"><span class="k">STEP 2</span><b>Perceptual sharpness σ</b><span class="muted small">Weighted Laplacian of J, a<sub>c</sub>, b<sub>c</sub>; standard deviation inside the mask.</span></div>
+      <div class="step"><span class="k">STEP 3</span><b>Distance from calibration</b><span class="muted small">A quadratic curve maps σ to distance in centimetres.</span></div>
+    </div>
+
+    <h3>Core idea ① — focus behind the range</h3>
+    <div class="core">
+      <div class="two">
+        <div>
+          <span class="eyebrow">Removing the defocus ambiguity</span>
+          <p style="margin-top:8px">If the focal plane sits inside the range (left, focus 7 m), objects in front of and behind it can show the same blur. Moving focus to 15 m (right) makes blur change in one direction across 1–7 m, so one image is enough. Earlier dual-aperture DFD on the same scene had errors above 4.9 m; the back-focused single-shot design brings the white vehicle to 0.16 m.</p>
+        </div>
+        <figure style="margin:0"><img class="zoom" src="assets/defocus.jpg" alt="Theoretical circle-of-confusion curves for focus at 7 m and 15 m at several apertures" loading="lazy"><figcaption>Theoretical blur vs. distance (left: focus 7 m, right: focus 15 m); f/1.4 is the most distance-sensitive.</figcaption></figure>
+      </div>
+    </div>
+
+    <h3>Core idea ② — CIECAM02 perceptual sharpness</h3>
+    <div class="core">
+      <span class="eyebrow">Color-aware, not grayscale</span>
+      <p style="margin-top:8px">The masked image is converted to CIECAM02 lightness <i>J</i> and chroma components <i>a<sub>c</sub></i>, <i>b<sub>c</sub></i>. Their Laplacian responses are weighted and the standard deviation inside the mask is the sharpness σ.</p>
+      <div class="eq">E = w<sub>J</sub>∇²J + w<sub>a</sub>∇²a<sub>c</sub> + w<sub>b</sub>∇²b<sub>c</sub>, &nbsp;&nbsp; σ = Std<sub>M</sub>[E]<br>
+        <span class="small muted" style="font-family:Inter,sans-serif">optimized (w<sub>J</sub>, w<sub>a</sub>, w<sub>b</sub>) = (0.8136, 0.1782, 0.0081), calibrated on white, gray and black vehicles</span></div>
+      <div class="eq"><span class="ours">d = −6.562σ² + 128.83σ + 68.39</span> &nbsp;(cm), &nbsp; R² = 0.969</div>
+      <div class="two">
+        <figure style="margin:0"><img class="zoom" src="assets/calib.jpg" alt="Calibration curve of sharpness versus distance for white, black and gray vehicles" loading="lazy"><figcaption>Calibration: sharpness σ vs. distance.</figcaption></figure>
+        <figure style="margin:0"><img class="zoom" src="assets/cars.jpg" alt="CARLA test vehicles in different colors" loading="lazy"><figcaption>CARLA test vehicles in different colors.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="results">
+    <h2><span class="n">04</span>Results</h2>
+    <p class="muted">CARLA scenario, test distances 1.2–6.7 m. Calibration uses only white, gray and black vehicles; red, green and blue are unseen colors.</p>
+    <figure style="max-width:860px;margin-left:auto;margin-right:auto"><img class="zoom" src="assets/bar_en.jpg" alt="Bar chart of RMSE per vehicle color for four sharpness measures; the optimized CIECAM weights give 0.24, 0.18, 0.38 and 0.52 m" loading="lazy"><figcaption>RMSE (m) per vehicle color for each sharpness measure. Red: ours. † black is a calibration color.</figcaption></figure>
+    <div class="tbl"><table>
+      <tr><th>Sharpness measure</th><th>Red</th><th>Green</th><th>Blue</th><th>Black†</th></tr>
+      <tr><td>Grayscale Laplacian (white-calibrated)</td><td>0.27</td><td>1.16</td><td>0.39</td><td>—</td></tr>
+      <tr><td>CIECAM linear (0.6, 0.2, 0.2)</td><td>0.34</td><td>0.51</td><td>1.21</td><td>1.06</td></tr>
+      <tr class="ours"><td>CIECAM optimized weights (ours)</td><td>0.24</td><td>0.18</td><td>0.38</td><td>0.52</td></tr>
+    </table></div>
+    <p class="small muted">RMSE in metres. † calibration color.</p>
+
+    <h3>Near range, real captures (20–110 cm)</h3>
+    <div class="tbl"><table>
+      <tr><th>RMSE (cm)</th><th>STMAP</th><th>Depth Pro</th><th>UniDepthV2</th><th class="ours">CA-DFDS (ours)</th></tr>
+      <tr><td>Original</td><td>39.47</td><td>184.36</td><td>324.15</td><td class="ours">10.30</td></tr>
+      <tr><td>Rotated</td><td>66.36</td><td>262.42</td><td>375.39</td><td class="ours">10.96</td></tr>
+    </table></div>
+    <p class="small muted">Benchmark and baselines from the prior DFDS study (Chang et al., 2026).</p>
+  </section>
+
+  <section id="demo">
+    <h2><span class="n">05</span>Demo: a vehicle approaching from 6.7 m to 1.2 m</h2>
+    <figure><video src="assets/demo.mp4" poster="assets/demo_new.jpg" controls muted playsinline preload="metadata"></video>
+      <figcaption>Yellow: vehicle mask. Right panel: ground truth, CA-DFDS estimate and error per frame. Single-frame RMSE for red / green / blue vehicles: 0.29 / 0.20 / 0.34 m (colors not used in calibration).</figcaption></figure>
+  </section>
+
+  <section id="apps">
+    <h2><span class="n">06</span>Where it helps</h2>
+    <p class="muted">One ordinary camera, no LiDAR or stereo rig — distance you can explain step by step.</p>
+    <div class="apps">
+      <div class="app"><h4>Parking assist</h4><p>A rear camera estimates the 1–7 m gap and warns the driver when it gets too close.</p></div>
+      <div class="app"><h4>Warehouse AGV / forklift safety</h4><p>A front camera estimates distance to vehicles and obstacles so the machine slows and stops early.</p></div>
+      <div class="app"><h4>Low-speed campus shuttles</h4><p>A single camera keeps the following gap, reducing reliance on LiDAR.</p></div>
+      <div class="app"><h4>Parking lot & yard monitoring</h4><p>Existing CCTV can estimate vehicle positions and gaps and feed a digital twin.</p></div>
+    </div>
+    <p class="small muted" style="margin-top:14px">Deployment: one camera plus 13 known-distance images for calibration. Processing time 74.41 ms per image on an RTX 5080 host (grayscale-sharpness version, mask acquisition excluded).</p>
+  </section>
+
+  <section id="limits">
+    <h2><span class="n">07</span>Limitations</h2>
+    <div class="limit">Vehicle-distance results are from CARLA simulation over 1–7 m; the 20–110 cm real-capture results come from the prior DFDS study. Masks currently come from SAM 2 or manual annotation. Validation with a physical camera on real vehicles, longer ranges, timing of the CIECAM02 version on edge devices, and more vehicle colors are future work.</div>
+  </section>
+</main>
+
+<footer>© 2026 CA-DFDS team · National Taiwan University · Rochester Institute of Technology · National Changhua University of Education</footer>
+
+<div class="lightbox" id="lb" role="dialog" aria-label="Enlarged figure"><img alt=""></div>
+<script>
+/* 上傳 YouTube 後把影片 ID 填在這裡（例如 https://www.youtube.com/watch?v=XXXX 的 XXXX）。留空則改播本機示範影片。 */
+const YOUTUBE_ID = '';
+(function(){
+  const slot = document.getElementById('ytSlot'), note = document.getElementById('ytNote');
+  if (YOUTUBE_ID) {
+    slot.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + YOUTUBE_ID + '" title="CA-DFDS video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+  } else {
+    slot.innerHTML = '<video src="assets/intro.mp4" poster="assets/intro_poster.jpg" controls playsinline preload="metadata" style="width:100%;height:100%"></video>';
+  }
+  const lb = document.getElementById('lb'), li = lb.querySelector('img');
+  document.querySelectorAll('img.zoom').forEach(im => im.addEventListener('click', () => { li.src = im.src; li.alt = im.alt; lb.classList.add('on'); }));
+  lb.addEventListener('click', () => lb.classList.remove('on'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+  const btn = document.getElementById('themeBtn'), root = document.documentElement;
+  try { const t = localStorage.getItem('cadfds-theme'); if (t) root.dataset.theme = t; } catch (e) {}
+  btn.addEventListener('click', () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('cadfds-theme', root.dataset.theme); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
