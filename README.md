@@ -15,7 +15,7 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 | `docs/index.html` | 專案網頁（單一 HTML，支援深色模式與手機版） |
 | `docs/assets/intro.mp4` | 配音介紹影片（v6） |
 | `docs/assets/demo.mp4` | 系統展示：測試距離 6.7 m → 1.2 m |
-| `docs/assets/poster.pdf` | A1 海報（v16） |
+| `docs/assets/poster.pdf` | A1 海報（v20） |
 
 ## 更新影片連結
 
