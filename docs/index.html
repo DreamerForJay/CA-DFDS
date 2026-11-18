@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,37 +17,39 @@
   <section class="hero">
     <div class="hero-copy"><p class="venue">2026 產學創新實作競賽 · D86</p>
       <p class="eyebrow">MONOCULAR DEPTH FROM DEFOCUS</p>
-      <h1>CA-DFDS<span>單眼失焦車距估測系統</span></h1>
+      <div class="title-row"><h1>CA-DFDS</h1><div class="title-logos" aria-label="Affiliations"><a class="logo-seal" href="https://www.ntu.edu.tw/" aria-label="National Taiwan University"><img src="assets/logo-ntu.png" alt="臺大校徽"></a><a class="logo-rit" href="https://www.rit.edu/" aria-label="Rochester Institute of Technology"><img src="assets/logo-rit.png" alt="RIT"></a><a class="logo-seal" href="https://www.ncue.edu.tw/" aria-label="National Changhua University of Education"><img src="assets/logo-ncue.png" alt="彰師大校徽"></a></div></div><p class="project-subtitle">單眼失焦車距估測系統</p>
       <p>CA-DFDS 從固定光圈與對焦設定下的車身清晰度估測距離。在 CARLA 資料上，逐幀查看輸入、清晰度與估測結果。</p>
-      <p class="hero-authors">王宇森 · 郭仲輝 · 楊杰倫 · 張英超</p><p class="hero-authors-en" lang="en">Yu-Sen Wang · Chunghui Kuo · Chieh-Lun Yang · Ing-Chau Chang</p><div class="actions"><a class="button primary" href="#compare">開啟互動比較</a><a class="button" href="#method">系統架構</a></div>
+      <div class="paper-authors"><span>Yu-Sen Wang<sup>1</sup></span><a href="https://www.rit.edu/directory/clkiee-chunghui-kuo">Chunghui Kuo<sup>2</sup></a><a href="https://xn--zwq108c.tw/research/">Chieh-Lun Yang<sup>3</sup></a><a href="https://people.csie.ncue.edu.tw/icchang/">Ing-Chau Chang<sup>3</sup></a></div><p class="affiliations"><span><sup>1</sup> 國立臺灣大學</span><span><sup>2</sup> Rochester Institute of Technology</span><span><sup>3</sup> 國立彰化師範大學</span></p><div class="actions"><a class="button primary" href="#compare">開啟互動比較</a><a class="button" href="#method">系統架構</a></div>
     </div>
     <div class="hero-media" id="video">
       <video controls playsinline preload="metadata" poster="assets/demo/C-A1_teaser/poster.jpg" src="assets/demo/C-A1_teaser/video.mp4" aria-label="CA-DFDS Teaser"></video>
       <p>Teaser · CARLA 12 個離散距離影像，依 6.7 → 1.2 m 排序</p>
     </div>
   </section>
-  <div class="institution-logos"><img src="assets/institution-logos.png" alt="National Taiwan University · Rochester Institute of Technology · National Changhua University of Education"></div>
-  <div class="metrics" aria-label="實驗概覽">
+<div class="metrics" aria-label="實驗概覽">
     <div><strong>0.337 m</strong><span>CA-DFDS RMSE · 手繪遮罩</span></div>
     <div><strong>480 張</strong><span>CARLA 評測影像 · 4 車色</span></div>
     <div><strong>1.2–6.7 m</strong><span>本頁測試距離</span></div>
     <div><strong>14.11 FPS</strong><span>RTX 5080 FP32 · 已有遮罩</span></div>
   </div>
-  <p id="load-status" role="status"></p><p class="note" id="media-language-note">原始素材中的圖內文字與影片字幕保留原文。</p>
-<section id="motivation"><p class="eyebrow">MOTIVATION</p><h2>研究動機與設計</h2><div class="motivation-grid">
-<article class="card"><span class="motif">01 / OPTICS</span><h3>避免遠近歧義</h3><p>將對焦平面放在 15 m，使 1–7 m 測距範圍位於同一側，以單張失焦影像估距。</p><svg viewBox="0 0 240 65" aria-hidden="true"><path class="light-trace" d="M10 54 Q95 45 180 10"/><path class="guide" d="M190 4V60M10 60H230"/><circle class="pulse-dot" cx="180" cy="10" r="4"/></svg></article>
-<article class="card"><span class="motif">02 / SEGMENTATION</span><h3>限定車輛區域</h3><p>以車輛遮罩分離背景，只在目標範圍量測清晰度，降低背景混入的影響。</p><svg viewBox="0 0 240 65" aria-hidden="true"><path class="guide" d="M15 52H225M65 12H175V57H65Z"/><path class="light-trace" d="M60 22V8H80M160 8H180V22M180 45V61H160M80 61H60V45"/></svg></article>
-<article class="card"><span class="motif">03 / COLOR</span><h3>色彩感知清晰度</h3><p>將影像轉為 CIECAM02 明度與色彩分量，加權計算清晰度，再經校正曲線輸出距離。</p><svg viewBox="0 0 240 65" aria-hidden="true"><path class="light-trace" d="M15 33H70L105 12H160M70 33H160M70 33L105 54H160"/><circle cx="175" cy="12" r="7" fill="#78efff"/><circle cx="175" cy="33" r="7" fill="#ff536f"/><circle cx="175" cy="54" r="7" fill="#c6a4ff"/></svg></article>
+  <p id="load-status" role="status"></p>
+<section id="motivation"><p class="eyebrow">MOTIVATION & CONTRIBUTIONS</p><h2>為什麼用單眼失焦估測車距？</h2>
+<p class="section-lead">電動車、自駕輔助與數位孿生，都需要可靠的距離資訊。相較於光達硬體與雙鏡頭配置，單眼相機具備低成本、體積小與密集影像資訊的優勢；關鍵是如何從一張影像，取得具有物理依據的公制距離。</p>
+<div class="motivation-context"><article><h3>傳統失焦測距的問題</h3><p>複雜背景與物體邊界容易混入模糊度計算；轉為灰階後，亮度相近但顏色不同的邊緣也可能被削弱。</p></article><article><h3>從深度預測到可解釋測距</h3><p>Depth Pro、UniDepth V2 能由單張影像預測深度，但預訓練模型在新場景的公制尺度仍需檢驗，也難直接確認推論是否依據失焦資訊。</p></article></div>
+<h3 class="contribution-heading">CA-DFDS 的三項技術貢獻</h3><div class="motivation-grid">
+<article class="card"><span class="motif">01 / COLOR</span><h3>色彩感知失焦特徵</h3><p>以 CIECAM02 明度 J 與色彩通道 a꜀、b꜀ 保留感知邊緣資訊。加權拉普拉斯響應取代單純灰階清晰度，降低不同物體色彩造成的估測偏差。</p></article>
+<article class="card"><span class="motif">02 / CALIBRATION</span><h3>色彩權重與距離聯合校正</h3><p>交替最佳化色彩通道權重與距離映射曲線，以少量已知距離的校正影像，將感知清晰度轉換為公制距離。</p></article>
+<article class="card"><span class="motif">03 / REAR FOCUS</span><h3>後對焦單張影像測距</h3><p>將對焦平面設於測距區間之後，使散焦量隨距離單調變化；結合目標物分割，在車輛遮罩內計算清晰度，減少背景混合。</p></article>
 </div></section>
 <section id="method">
     <p class="eyebrow">METHOD</p><h2>系統架構與推論流程</h2>
-    <p>對單張 f/1.4 影像套用車輛遮罩，轉換成 CIECAM02 的 J、a₍c₎、b₍c₎，以遮罩內的加權拉普拉斯響應標準差 σ，經二次校正換算距離。</p>
-    <div class="system-flow"><svg class="flow-links" viewBox="0 0 1000 10" preserveAspectRatio="none" aria-hidden="true"><path class="flow-base" d="M0 5H1000"/><path class="flow-beam" d="M0 5H1000"/></svg><div data-flow="0"><div class="flow-thumbnail"><img data-flow-image="0_input" src="assets/demo/C-C1_input_output/steps/3.7m/0_input.jpg" alt=""><i></i></div><b>01</b><span>輸入</span><small>f/1.4</small></div><i>→</i><div data-flow="1"><div class="flow-thumbnail"><img data-flow-image="1_mask" src="assets/demo/C-C1_input_output/steps/3.7m/1_mask.jpg" alt=""><i></i></div><b>02</b><span>車輛遮罩</span><small>Mask</small></div><i>→</i><div data-flow="2"><div class="flow-thumbnail"><img data-flow-image="2_J" src="assets/demo/C-C1_input_output/steps/3.7m/2_J.jpg" alt=""><i></i></div><b>03</b><span>色彩轉換</span><small>J · a꜀ · b꜀</small></div><i>→</i><div data-flow="3"><div class="flow-thumbnail"><img data-flow-image="5_sharpness" src="assets/demo/C-C1_input_output/steps/3.7m/5_sharpness.jpg" alt=""><i></i></div><b>04</b><span>清晰度計算</span><small>σ</small></div><i>→</i><div data-flow="4"><div class="flow-thumbnail"><img data-flow-image="6_result" src="assets/demo/C-C1_input_output/steps/3.7m/6_result.jpg" alt=""><i></i></div><b>05</b><span>距離校正</span><small>d = f(σ)</small></div></div><div class="grid two">
+    <p>以 SAM 取得目標物遮罩，將單張失焦影像轉為 CIECAM02 色彩通道，在遮罩內計算加權拉普拉斯響應的標準差，再由校正曲線輸出距離。本頁 CARLA 評測採手繪遮罩。</p>
+    <figure class="architecture"><a href="assets/arch_fix.jpg" target="_blank" rel="noopener"><img src="assets/arch_fix.jpg" width="2000" height="1538" alt="CA-DFDS 系統架構：影像取得、目標分割、色彩感知清晰度與距離校正" loading="lazy"></a></figure><div class="grid two">
       <article class="card">
         <h3>推論流程動畫</h3>
         <div class="controls"><label>樣本 <select id="step-distance"><option>1.2m</option><option selected>3.7m</option><option>6.7m</option></select></label><label class="stretch">處理步驟 <input id="step" type="range" min="0" max="6" value="0"></label></div>
-        <img id="step-image" alt="推論中間結果">
-        <div id="pipeline" class="pipeline" aria-label="推論流程"></div><p id="step-text"></p><button id="step-play" aria-pressed="true">暫停流程</button><p class="note">既有推論結果動畫重播，非瀏覽器即時推論。</p>
+        <img id="step-image" alt="推論中間結果" role="button" tabindex="0" aria-label="Pause or resume inference replay">
+        <div id="pipeline" class="pipeline" aria-label="推論流程"></div><p id="step-text"></p><button id="step-play" aria-pressed="true" hidden>暫停流程</button><p class="note">既有推論結果動畫重播，非瀏覽器即時推論。</p>
       </article>
       <article class="card">
         <h3>拍攝幾何</h3>
@@ -69,7 +71,7 @@
     <div class="workbench">
       <div class="controls">
         <label>車色 <select id="color"><option value="red">紅</option><option value="green">綠</option><option value="blue">藍</option><option value="black">黑</option></select></label><label class="stretch">資料集距離 <input id="frame" type="range" min="0" max="11" value="6"><output id="frame-value"></output></label>
-        <button id="play" hidden>播放</button><span id="comparison-state" role="status">自動重播 · 點擊畫面暫停</span>
+        <button id="play" hidden>播放</button><span id="comparison-state" role="status" hidden>自動重播 · 點擊畫面暫停</span>
       </div>
 <div class="legend" id="method-legend"><span class="ours-label">● CA-DFDS (Ours)</span><span style="color:#7bc5ff">● UniDepthV2</span><span style="color:#d3a9ff">● Depth Pro</span><span style="color:#ffce78">● STMAP</span></div><div class="comparison-stage" id="comparison-stage" role="button" tabindex="0" aria-label="Pause or resume sample replay">      <figure class="source-input"><div class="vehicle-frame"><img id="vehicle-input" alt="CARLA 輸入影像"><span id="vehicle-box" aria-hidden="true"></span></div><figcaption id="vehicle-caption"></figcaption></figure><div class="grid four" id="method-cards"></div>
 </div>      <canvas id="compare-chart" role="img" aria-label="各方法估測距離與真值曲線"></canvas>
@@ -113,7 +115,7 @@
   </section>
 <section id="gallery">
     <p class="eyebrow">VIDEO GALLERY</p><h2>情境影片</h2>
-    <p>影片將 CARLA 離散影像依距離或車色重排。時間軸呈現資料集順序，沒有連續行駛的時間真值。</p>
+    <p>CARLA 離散距離影像重播：接近、往返與四車色比較。</p>
     <div class="grid three" id="videos"></div><details class="full-intro"><summary>完整作品介紹</summary><video controls playsinline preload="none" src="assets/intro.mp4" poster="assets/intro_poster.jpg"></video></details>
   </section>
 <section id="speed">
@@ -121,10 +123,6 @@
     <p>RTX 5080 + Intel Core Ultra 7 265K，紅消防車 30 張影像，沿用既有遮罩。下表的 FPS 與延遲中位數各自取自量測來源。</p>
     <div class="card"><div class="table-scroll"><table id="timing"></table></div><p id="mask-timing"></p></div>
   </section>
-<section id="limits">
-    <p class="eyebrow">LIMITATIONS</p><h2>失敗案例與限制</h2>
-    <div class="grid three" id="failures"></div>
-    <p class="note">逆光與反光尚無對應量測。實體相機實驗列於後續實驗 M6。</p>
-  </section>
+
 </main>
-<footer><div><strong>CA-DFDS</strong><span>2026 產學創新實作競賽 · D86</span><p>Yu-Sen Wang · Chunghui Kuo · Chieh-Lun Yang · Ing-Chau Chang<br>National Taiwan University · Rochester Institute of Technology · National Changhua University of Education</p></div><div><a href="https://github.com/DreamerForJay/CA-DFDS-finals">GitHub ↗</a><a href="https://drive.google.com/drive/folders/1dhRViJVTi19B6Qj7G2V88P_CmXReAIpD">素材來源 ↗</a><a href="assets/poster.pdf">海報 ↗</a><a href="#top">回頁首 ↑</a></div></footer></body></html>
+<footer><strong>CA-DFDS</strong><span>2026 產學創新實作競賽 · D86</span><a href="#top">回頁首 ↑</a></footer></body></html>

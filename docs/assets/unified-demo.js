@@ -242,13 +242,7 @@ function gallery() {
     figure.append(video,caption);
     get("videos").append(figure);
   }
-  for (const {file,caption} of data.failures) {
-    const figure = stamp("figure","");
-    figure.className = "card media-card";
-    const image = Object.assign(document.createElement("img"),{src:root+"C-K1_failure_cases/"+file.replace(/\.png$/, ".jpg"),alt:caption,loading:"lazy"});
-    figure.append(image,stamp("figcaption",caption));
-    get("failures").append(figure);
-  }
+
 }
 
 

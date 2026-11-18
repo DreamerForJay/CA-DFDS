@@ -219,5 +219,22 @@
   "同一批 480 張 CARLA 測試影像；深度模型使用相同校正集線性校正。CA-DFDS 固定首列，其餘方法依所選指標排序。": "The same 480 CARLA test images are used; depth models are linearly calibrated on the same calibration set. CA-DFDS is pinned first; other methods follow the selected metric.",
   "CARLA 測試集涵蓋紅、綠、藍、黑，每車色 12 個距離 × 10 張影像。表格顯示四個正式比較方法。": "The CARLA test set covers red, green, blue and black vehicles: 12 distances × 10 images per color. The table contains four official comparison methods.",
   "王宇森 · 郭仲輝 · 楊杰倫 · 張英超": "Yu-Sen Wang · Chunghui Kuo · Chieh-Lun Yang · Ing-Chau Chang",
-  "主表採手繪遮罩；黑色亦為校正車色。近距離 1.2–3.7 m，遠距離 4.2–6.7 m。近／遠欄是對各距離 RMSE 再取均方根。實拍需另行驗證。": "The table uses annotated masks; black is also a calibration color. Near range: 1.2–3.7 m; far range: 4.2–6.7 m. Near/far values are the root mean square of per-distance RMSE values. Real-vehicle validation is separate."
+  "主表採手繪遮罩；黑色亦為校正車色。近距離 1.2–3.7 m，遠距離 4.2–6.7 m。近／遠欄是對各距離 RMSE 再取均方根。實拍需另行驗證。": "The table uses annotated masks; black is also a calibration color. Near range: 1.2–3.7 m; far range: 4.2–6.7 m. Near/far values are the root mean square of per-distance RMSE values. Real-vehicle validation is separate.",
+  "國立臺灣大學": "National Taiwan University",
+  "國立彰化師範大學": "National Changhua University of Education",
+  "為什麼用單眼失焦估測車距？": "Why estimate vehicle distance from defocus?",
+  "電動車、自駕輔助與數位孿生，都需要可靠的距離資訊。相較於光達硬體與雙鏡頭配置，單眼相機具備低成本、體積小與密集影像資訊的優勢；關鍵是如何從一張影像，取得具有物理依據的公制距離。": "Electric vehicles, driver assistance and digital twins need reliable distance information. A monocular camera offers a compact, low-cost source of dense image information compared with LiDAR or stereo configurations. The challenge is to recover metric distance from a single image using a physically grounded cue.",
+  "傳統失焦測距的問題": "Challenges in conventional DFD",
+  "複雜背景與物體邊界容易混入模糊度計算；轉為灰階後，亮度相近但顏色不同的邊緣也可能被削弱。": "Complex backgrounds and object boundaries can contaminate blur measurements. Grayscale conversion can also suppress edges between colors with similar lightness.",
+  "從深度預測到可解釋測距": "Interpretable distance estimation",
+  "Depth Pro、UniDepth V2 能由單張影像預測深度，但預訓練模型在新場景的公制尺度仍需檢驗，也難直接確認推論是否依據失焦資訊。": "Depth Pro and UniDepth V2 predict depth from a single image. Their metric scale still needs validation in new scenes, and it is difficult to directly establish whether a prediction relies on defocus cues.",
+  "CA-DFDS 的三項技術貢獻": "Three technical contributions",
+  "色彩感知失焦特徵": "Color-Aware Defocus Feature",
+  "以 CIECAM02 明度 J 與色彩通道 a꜀、b꜀ 保留感知邊緣資訊。加權拉普拉斯響應取代單純灰階清晰度，降低不同物體色彩造成的估測偏差。": "CIECAM02 lightness J and chromatic channels a꜀ and b꜀ preserve perceptual edge information. A weighted Laplacian response replaces grayscale sharpness to reduce color-dependent estimation bias.",
+  "色彩權重與距離聯合校正": "Joint Color-Weight and Distance Calibration",
+  "交替最佳化色彩通道權重與距離映射曲線，以少量已知距離的校正影像，將感知清晰度轉換為公制距離。": "Alternating optimization jointly fits channel weights and the distance mapping, converting perceptual sharpness to metric distance using a small set of calibration images.",
+  "後對焦單張影像測距": "Rear-Focused Single-Image Distance Estimation",
+  "將對焦平面設於測距區間之後，使散焦量隨距離單調變化；結合目標物分割，在車輛遮罩內計算清晰度，減少背景混合。": "Placing the focus plane beyond the measurement interval makes defocus vary monotonically with distance. Object segmentation restricts sharpness measurement to the vehicle mask, reducing background mixing.",
+  "以 SAM 取得目標物遮罩，將單張失焦影像轉為 CIECAM02 色彩通道，在遮罩內計算加權拉普拉斯響應的標準差，再由校正曲線輸出距離。本頁 CARLA 評測採手繪遮罩。": "SAM provides the target mask. A single defocused image is converted to CIECAM02 channels, and the standard deviation of the weighted Laplacian response within the mask is mapped to distance through calibration. The CARLA evaluation shown here uses manually annotated masks.",
+  "CARLA 離散距離影像重播：接近、往返與四車色比較。": "Replays of discrete CARLA distance samples: approach, round trip and four vehicle colors."
 }

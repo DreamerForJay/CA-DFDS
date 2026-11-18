@@ -12,11 +12,11 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 
 `docs/index.html` 為唯一主頁與 Demo；舊 `/demo/` 保留語言與章節轉址。
 
-順序：作品／作者／校徽 → 研究動機 → 系統流程 → 方法比較 → 影像條件 → 定量結果 → 影片 → 速度 → 限制。主要內容直接顯示，完整介紹影片可展開。
+順序：作品／作者／校徽 → 研究動機 → 系統流程 → 方法比較 → 影像條件 → 定量結果 → 影片 → 速度。主要內容直接顯示，完整介紹影片可展開。
 
 - `assets/unified-demo.js`：既有資料、比較圖表與正式四方法表。
 - `assets/experience.js`：可見區域自動重播、點比較區暫停／繼續、全域暫停。
-- `assets/luminous.js`、`luminous.css`：明暗主題、滑鼠反光、SVG 流光、真實中間影像流程、車色圖表。
+- `assets/luminous.js`、`luminous.css`：明暗主題、滑鼠反光、環境流光、真實中間影像重播、車色圖表。
 - `assets/language.js`、`translations.json`：中英文，可用 `?lang=en`／`?lang=zh`。
 - `demo/data.json`、`assets/demo/`：原有數據與素材；不重新推論、不改科學結果。
 
@@ -40,3 +40,13 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 參考 [MoGe-3](https://qft-333.github.io/moge3page/) 的流程控制、[GaMO](https://yichuanh.github.io/GaMO/) 的方法對照，以及 [BRDFusion](https://shigon255.github.io/brdfusion-page/) 的展示／方法／結果順序。
 
 測試：自動游標推進、點擊／鍵盤暫停、四方法數值、排序固定首列、影片跳轉、中英文、明暗主題、手機溢位與對照標籤碰撞、減少動態效果。所有資料表沿用原值。
+
+### 2026-11-18 頁首與內容精簡
+
+- 預設中文、深色；仍提供中英文與明暗切換。
+- 標題旁顯示透明校徽，作者與單位採論文頁排列。
+- 導覽捲動後縮小，手機保留橫向導覽。
+- 動機與三項貢獻依已提交作品說明書整理，恢復原始架構圖。
+- 推論圖支援點擊／鍵盤暫停；移除獨立限制區與素材來源導覽。
+- 數據及評測條件保持不變，海報與簡報未修改。
+- 驗證 320、390、768、1024、1440 px × 中英文 × 明暗主題，無頁面橫向溢出。

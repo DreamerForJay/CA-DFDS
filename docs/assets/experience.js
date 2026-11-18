@@ -13,7 +13,7 @@ const startExperience=()=>{
   document.querySelectorAll('video').forEach(v=>{if(v.closest('.full-intro'))return;v.muted=true;v.loop=true;v.playsInline=true;v.dataset.auto='true';v.addEventListener('pause',()=>{if(!v.dataset.programPause&&inView(v)&&motionEnabled)v.dataset.userPaused='true';});v.addEventListener('play',()=>{delete v.dataset.userPaused;if(!motionEnabled)v.dataset.manualPlaying='true';});});
   let comparisonAuto=true;
   function updateButtons(){
-    get('motion').textContent=tr(motionEnabled?'暫停動畫':'播放動畫');get('motion').setAttribute('aria-pressed',String(motionEnabled));
+    get('motion').textContent=motionEnabled?'Ⅱ':'▷';get('motion').title=tr(motionEnabled?'暫停動畫':'播放動畫');get('motion').setAttribute('aria-label',get('motion').title);get('motion').setAttribute('aria-pressed',String(motionEnabled));
     get('step-play').textContent=tr(stepEnabled?'暫停流程':'播放流程');get('step-play').setAttribute('aria-pressed',String(stepEnabled));
     document.documentElement.dataset.motion=motionEnabled?'running':'paused';
     get('comparison-state').textContent=tr(motionEnabled&&comparisonAuto?'自動重播 · 點擊畫面暫停':'已暫停 · 點擊畫面繼續');
@@ -29,6 +29,8 @@ const startExperience=()=>{
   const stage=get('comparison-stage');stage.addEventListener('click',toggleComparison);stage.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();toggleComparison();}});
   get('motion').addEventListener('click',()=>{motionEnabled=!motionEnabled;if(!motionEnabled)document.querySelectorAll('video').forEach(v=>delete v.dataset.manualPlaying);updateButtons();syncMedia();});
   get('step-play').addEventListener('click',()=>{stepEnabled=!stepEnabled;if(stepEnabled)motionEnabled=true;updateButtons();});
+  get('step-image').addEventListener('click',()=>get('step-play').click());
+  get('step-image').addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();get('step-play').click();}});
   get('step').addEventListener('input',()=>{stepEnabled=false;updateButtons();});
   // Selecting a color keeps playback running; dragging the distance slider freezes the chosen sample.
   get('frame').addEventListener('input',()=>{comparisonAuto=false;updateButtons();syncMedia();});

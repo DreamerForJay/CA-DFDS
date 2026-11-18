@@ -1,8 +1,9 @@
 'use strict';
 (() => {
   const root=document.documentElement;
-  let theme='dark';try{theme=localStorage.getItem('cadfds-theme')||'dark';}catch{}
-  function themeButton(){get('theme').textContent=window.t?window.t(root.dataset.theme==='light'?'深色模式':'明亮模式'):(root.dataset.theme==='light'?'深色模式':'明亮模式');get('theme').setAttribute('aria-pressed',String(root.dataset.theme==='light'));}
+  const compact=()=>root.classList.toggle('scrolled',scrollY>60);addEventListener('scroll',compact,{passive:true});compact();
+  let theme='dark';
+  function themeButton(){const label=window.t?window.t(root.dataset.theme==='light'?'深色模式':'明亮模式'):(root.dataset.theme==='light'?'深色模式':'明亮模式');get('theme').textContent=root.dataset.theme==='light'?'☾':'☀';get('theme').setAttribute('aria-label',label);get('theme').title=label;get('theme').setAttribute('aria-pressed',String(root.dataset.theme==='light'));}
   function setTheme(value){root.dataset.theme=value;try{localStorage.setItem('cadfds-theme',value);}catch{}themeButton();if(window.demoReady){plots.forEach((args,canvas)=>plot(canvas,...args));if(window.drawColorChart)window.drawColorChart();}}
   setTheme(theme==='light'?'light':'dark');
   get('theme').addEventListener('click',()=>setTheme(root.dataset.theme==='light'?'dark':'light'));
