@@ -3,7 +3,7 @@ const get = id => document.getElementById(id);
 const root = "assets/demo/";
 const methods = [
   ["cadfds", "CA-DFDS (本作品)", "#ff5468"], ["unidepth", "UniDepthV2 (2025)", "#7bc5ff"],
-  ["depthpro", "Depth Pro (2024)", "#d3a9ff"], ["stmap", "STMAP (1994)", "#ffce78"]
+  ["stmap", "STMAP (1994)", "#ffce78"], ["depthpro", "Depth Pro (2024)", "#d3a9ff"]
 ];
 const labels = {opt:"CA-DFDS", reopt5:"CA-DFDS 重新最佳化", jonly:"CA-DFDS 只用 J", gray:"灰階 DFD",
   unidepth_lin:"UniDepth V2 · 線性校正", depthpro_lin:"Depth Pro · 線性校正", stmap:"STMAP",
@@ -40,6 +40,7 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
   canvas.width = width * ratio;
   canvas.height = height * ratio;
   const ctx = canvas.getContext("2d");
+  const light=document.documentElement.dataset.theme==='light';
   ctx.scale(ratio, ratio);
   const points = series.flatMap(item => item.points);
   const minX = Math.min(...points.map(point => point[0]));
@@ -52,12 +53,12 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
   function line(x1,y1,x2,y2,color) {
     ctx.strokeStyle=color; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
   }
-  ctx.font = "11px ui-monospace, monospace";
-  ctx.fillStyle = "#aabdc3";
+  ctx.font = "13px Segoe UI, sans-serif";
+  ctx.fillStyle = light ? "#40516a" : "#c4d5ec";
   ctx.fillText(window.t ? window.t(unit) : unit, 5, 14);
   for (let tick=0;tick<=4;tick++) {
     const value = minY + (maxY-minY)*tick/4;
-    line(bounds.left,y(value),bounds.right,y(value),"#2b3c46");
+    line(bounds.left,y(value),bounds.right,y(value),light ? "#ccd9e9" : "#354c69");
     ctx.fillText(format(value, maxY <= 1 ? 2 : 1), 5, y(value)+4);
   }
   for (let tick=0;tick<=4;tick++) {
@@ -67,13 +68,14 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
   ctx.fillText(window.t ? window.t(xLabel) : xLabel, bounds.right-ctx.measureText(window.t ? window.t(xLabel) : xLabel).width, height-2);
   if (diagonal) {
     ctx.setLineDash([4,4]);
-    line(x(minX),y(minX),x(maxX),y(maxX),"#acb7bf");
+    line(x(minX),y(minX),x(maxX),y(maxX),light ? "#59677e" : "#acb7bf");
     ctx.setLineDash([]);
   }
   if (selected !== null) line(x(selected), bounds.top, x(selected), bounds.bottom, "#778e9d");
   for (const item of series) {
-    ctx.strokeStyle = item.color;
-    ctx.fillStyle = item.color;
+    const tint=light?({"#ff5468":"#d71940","#7bc5ff":"#0074bd","#d3a9ff":"#8541bb","#ffce78":"#9b6500"}[item.color]||item.color):item.color;
+    ctx.strokeStyle = tint;
+    ctx.fillStyle = tint;
     ctx.lineWidth = item.color === "#ff5468" ? 3.5 : 1.7;
     if (!scatter) {
       ctx.beginPath();
@@ -141,15 +143,17 @@ function togglePlayback() {
   } else {
     get("play").textContent = window.t ? window.t("暫停") : "暫停";
     playback = setInterval(() => {
+      if(Number(get("frame").value)===0){const colors=['red','green','blue','black'];get("color").value=colors[(colors.indexOf(get("color").value)+1)%4];}
       get("frame").value = (Number(get("frame").value) + 11) % 12;
       updateComparison();
-    }, 650);
+    }, 1100);
   }
 }
 const steps = ["0_input","1_mask","2_J","3_ac","4_bc","5_sharpness","6_result"];
 function updateSteps() {
   const index = Number(get("step").value);
   const distance = get("step-distance").value;
+  document.querySelectorAll("[data-flow-image]").forEach(img=>img.src=root+"C-C1_input_output/steps/"+distance+"/"+img.dataset.flowImage+".jpg");
   const row = data.steps[distance];
   document.querySelectorAll("[data-flow]").forEach(el=>el.classList.toggle("active",Number(el.dataset.flow)===[0,1,2,2,2,3,4][index]));
   const text = ["原始輸入 · f/1.4", "資料集手繪遮罩 · "+row.mask_pixels.toLocaleString()+" 像素",
@@ -200,23 +204,24 @@ function updateSplit() {
   get("wipe-line").style.left = percent;
 }
 
+const officialKeys=['opt','unidepth_lin','stmap','depthpro_lin'];
+const officialNames={opt:'CA-DFDS',unidepth_lin:'UniDepth V2',stmap:'STMAP',depthpro_lin:'Depth Pro'};
 function updateLeaderboard() {
-  const key = get("sort").value;
-  const cols = ["rmse_m","mae_m","rmse_near_1_2_to_3_7_m","rmse_far_4_2_to_6_7_m","rmse_red_m","rmse_green_m","rmse_blue_m","rmse_black_m","rmse_rot180_m"];
-  const score = row => format(row[key]) === "—" ? Infinity : Number(row[key]);
-  const rows = [...data.leaders.rows].sort((a,b) => score(a)-score(b)).map((row,index) =>
-    [index+1, row.method, row.year || "—", ...cols.map(col => format(row[col])), row.inputs, row.calibration]);
-  table(get("leaders"),["名次","方法","年份","RMSE (m)","MAE (m)","近","遠","紅","綠","藍","黑","旋轉","輸入","校正"],rows,row => row[1] === data.leaders.rows.find(item => item.ours)?.method);
+  const key=get("sort").value;
+  const rows=data.leaders.rows.filter(row=>officialKeys.includes(row.method_key));
+  rows.sort((a,b)=>a.method_key==='opt'?-1:b.method_key==='opt'?1:Number(a[key])-Number(b[key]));
+  table(get("leaders"),["方法","RMSE (m)","MAE (m)","近距離 (m)","遠距離 (m)","旋轉 RMSE (m)"],rows.map(row=>[officialNames[row.method_key],...['rmse_m','mae_m','rmse_near_1_2_to_3_7_m','rmse_far_4_2_to_6_7_m','rmse_rot180_m'].map(k=>format(row[k]))]),row=>row[0]==='CA-DFDS');
 }
 function updateError() {
   const points = Object.entries(data.analysis.error_vs_distance[get("error-method").value])
     .map(([distance,rmse]) => [Number(distance),rmse]).sort((a,b) => a[0]-b[0]);
-  plot(get("error-chart"),[{color:"#ff5468",points}],null,"RMSE (m)");
+  plot(get("error-chart"),[{color:({opt:"#ff5468",unidepth_lin:"#7bc5ff",stmap:"#ffce78",depthpro_lin:"#d3a9ff"})[get("error-method").value],points}],null,"RMSE (m)");
 }
 function updateAnalysis() {
   const url = root+"C-I1_analysis/"+get("analysis-select").value;
   get("analysis-image").src = url;
   get("analysis-link").href = url;
+  if(window.drawColorChart)window.drawColorChart();
 }
 function gallery() {
   const videos = [
@@ -300,7 +305,7 @@ async function initialize() {
   const response = await fetch("demo/data.json");
   if (!response.ok) throw Error("讀取資料失敗");
   data = await response.json();
-  get("error-method").replaceChildren(...Object.keys(data.analysis.error_vs_distance).map(key => new Option(labels[key] || key,key)));
+  get("error-method").replaceChildren(...Object.keys(data.analysis.error_vs_distance).filter(key=>officialKeys.includes(key)).map(key => new Option(officialNames[key] || key,key)));
   get("error-method").value = "opt";
   gallery();
   updateComparison();
