@@ -93,7 +93,7 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
 }
 
 function frames() {
-  return data.frames.filter(row => row.color === "red").sort((a,b) => Number(a.gt_m)-Number(b.gt_m));
+  return data.frames.filter(row => row.color === get("color").value).sort((a,b) => Number(a.gt_m)-Number(b.gt_m));
 }
 const panels = methods.map(([key, name, tint]) => {
   const panel = stamp("figure", "");
@@ -114,11 +114,16 @@ function updateComparison() {
   const rows = frames();
   const row = rows[Number(get("frame").value)];
   const distance = row.gt_m;
+  const color = row.color;
+  get("vehicle-input").src=root+"scenario_replays/"+color+"_"+distance+"m.jpg";
+  const [left,top,right,bottom]=data.boxes[color+"_"+distance];
+  Object.assign(get("vehicle-box").style,{left:left*100+"%",top:top*100+"%",width:(right-left)*100+"%",height:(bottom-top)*100+"%"});
+  get("vehicle-caption").textContent=color+" · GT "+distance+" m";
   get("frame-value").value = distance + " m";
   for (const panel of panels) {
     const {key, name, image, value, error, detail} = panel;
-    image.src = root + "C-E1_method_compare/panels/" + distance + "m_" + key + ".jpg";
-    image.alt = name + " 輸出圖";
+    image.src = color === "red" ? root + "C-E1_method_compare/panels/" + distance + "m_" + key + ".jpg" : get("vehicle-input").src;
+    image.alt = color === "red" ? name + " output" : "Shared input · " + color;
     value.textContent = format(row[key + "_m"]) + " m";
     error.textContent = "誤差 " + signed(Number(row[key + "_err_m"])) + " m";
     detail.textContent = row[key + "_raw_m"] ? " · 原始 " + format(row[key + "_raw_m"]) + " m" : "";
@@ -215,10 +220,12 @@ function updateAnalysis() {
 }
 function gallery() {
   const videos = [
-    ["消防車接近","C-A1_teaser/video.mp4","C-A1_teaser/poster.jpg","C-A1_teaser/per_frame.csv"],
+    ["車輛接近","scenario_replays/approach.mp4","scenario_replays/red_6.7m.jpg","scenario_replays/approach.csv"],
+    ["前車往返","scenario_replays/roundtrip.mp4","scenario_replays/red_3.7m.jpg","scenario_replays/roundtrip.csv"],
+    ["四車色切換","scenario_replays/colors.mp4","scenario_replays/blue_3.7m.jpg","scenario_replays/colors.csv"],
     ["輸入到輸出","C-C1_input_output/video.mp4","C-C1_input_output/poster.jpg","C-C1_input_output/per_frame.csv"],
-    ["四方法同步跑分","C-E1_method_compare/video.mp4","C-E1_method_compare/poster.jpg","C-E1_method_compare/per_frame.csv"],
     ["原圖與旋轉 180°","C-F1_before_after/video.mp4","C-F1_before_after/poster.jpg","C-F1_before_after/per_frame.csv"],
+    ["網頁操作與 CUDA 測距","scenario_replays/walkthrough.mp4","scenario_replays/walkthrough.jpg"]
   ];
   for (const [title, path, poster, csv] of videos) {
     const figure = stamp("figure","");
@@ -258,18 +265,31 @@ function setupVideoComparison() {
     position += blend ? 31 : 27;
     return start / 30;
   });
+  const slider = get("video-frame");
+  slider.max = starts.length;
   let selected;
   function sync() {
     const index = starts.findLastIndex(start => start <= video.currentTime);
     const next = video.currentTime < position / 30 ? index + 1 : null;
     if (next === selected) return;
     selected = next;
+    if (selected !== null) slider.value = selected;
+    get("video-frame-value").value = selected === null ? "摘要" : selected + " / " + starts.length;
     plot(canvas, series, selected, "絕對誤差 (m)", false, "樣本序號");
   }
+  slider.addEventListener("input", () => {
+    if (!video.readyState) return;
+    const targetTime = starts[Number(slider.value)-1] + 0.001;
+    video.pause();
+    video.currentTime = targetTime;
+  });
   canvas.addEventListener("click", event => {
     const fraction = (event.offsetX - 51) / (canvas.clientWidth - 66);
     const index = Math.max(0, Math.min(starts.length - 1, Math.round(fraction * (starts.length - 1))));
-    if (video.readyState) video.currentTime = starts[index] + 0.001;
+    if (video.readyState) {
+      video.pause();
+      video.currentTime = starts[index] + 0.001;
+    }
   });
   video.addEventListener("timeupdate", sync);
   video.addEventListener("seeked", sync);
@@ -299,7 +319,7 @@ async function initialize() {
   table(get("timing"),["管線","延遲中位數 (ms)","FPS","RMSE (m)"],Object.entries(data.timing.pipelines).map(([key,item]) =>
     [key,format(item.total_median_ms,2),format(item.fps,2),format(item.rmse_m,4)]));
   get("mask-timing").textContent = "YOLO + SAM 自動遮罩含 I/O 耗時 " + data.timing.auto_mask.wall_incl_io + " ms。此為獨立遮罩計時。";
-  const handlers = {frame:updateComparison,step:updateSteps,"step-distance":updateSteps,
+  const handlers = {color:updateComparison,frame:updateComparison,step:updateSteps,"step-distance":updateSteps,
     optics:updateOptics,"pair-kind":updatePair,"pair-distance":updatePair,split:updateSplit,sort:updateLeaderboard,
     "error-method":updateError,"analysis-select":updateAnalysis,
     view:() => {get("camera-image").src = root + "C-B1_camera_setup/" + get("view").value;}};

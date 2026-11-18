@@ -2,8 +2,8 @@
 const get = id => document.getElementById(id);
 const root = "../assets/demo/";
 const methods = [
-  ["cadfds", "CA-DFDS (本作品)", "#7af4c1"], ["unidepth", "UniDepthV2 (2025)", "#7bc5ff"],
-  ["depthpro", "Depth Pro (2024)", "#d3a9ff"], ["stmap", "STMAP (1994)", "#ffce78"]
+  ["cadfds", "CA-DFDS", "#245a78", "2026"], ["unidepth", "UniDepth V2", "#246951", "2025"],
+  ["depthpro", "Depth Pro", "#76538f", "2024"], ["stmap", "STMAP", "#a3592b", "1994"]
 ];
 const labels = {opt:"CA-DFDS", reopt5:"CA-DFDS 重新最佳化", jonly:"CA-DFDS 只用 J", gray:"灰階 DFD",
   unidepth_lin:"UniDepth V2 · 線性校正", depthpro_lin:"Depth Pro · 線性校正", stmap:"STMAP",
@@ -13,6 +13,9 @@ const signed = value => (value >= 0 ? "+" : "") + format(value);
 const stamp = (tag, value) => Object.assign(document.createElement(tag), {textContent:value});
 let data;
 let playback;
+let frameVisible = false;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let autoFrames = !reducedMotion.matches;
 let plots = new Map();
 
 function table(el, headings, rows, highlight = () => false) {
@@ -53,11 +56,11 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
     ctx.strokeStyle=color; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
   }
   ctx.font = "11px ui-monospace, monospace";
-  ctx.fillStyle = "#aabdc3";
+  ctx.fillStyle = "#546477";
   ctx.fillText(unit, 5, 14);
   for (let tick=0;tick<=4;tick++) {
     const value = minY + (maxY-minY)*tick/4;
-    line(bounds.left,y(value),bounds.right,y(value),"#2b3c46");
+    line(bounds.left,y(value),bounds.right,y(value),"#dae1e8");
     ctx.fillText(format(value, maxY <= 1 ? 2 : 1), 5, y(value)+4);
   }
   for (let tick=0;tick<=4;tick++) {
@@ -67,10 +70,10 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
   ctx.fillText(xLabel, bounds.right-ctx.measureText(xLabel).width, height-2);
   if (diagonal) {
     ctx.setLineDash([4,4]);
-    line(x(minX),y(minX),x(maxX),y(maxX),"#acb7bf");
+    line(x(minX),y(minX),x(maxX),y(maxX),"#7b8693");
     ctx.setLineDash([]);
   }
-  if (selected !== null) line(x(selected), bounds.top, x(selected), bounds.bottom, "#778e9d");
+  if (selected !== null) line(x(selected), bounds.top, x(selected), bounds.bottom, "#6b7784");
   for (const item of series) {
     ctx.strokeStyle = item.color;
     ctx.fillStyle = item.color;
@@ -93,53 +96,122 @@ function plot(canvas, series, selected, unit, diagonal = false, xLabel = "GT (m)
 }
 
 function frames() {
-  return data.frames.filter(row => row.color === "red").sort((a,b) => Number(a.gt_m)-Number(b.gt_m));
+  return data.frames.filter(row => row.color === get("color").value).sort((a,b) => Number(a.gt_m)-Number(b.gt_m));
 }
-const panels = methods.map(([key, name, tint]) => {
-  const panel = stamp("figure", "");
-  panel.className = "method-panel" + (key === "cadfds" ? " ours" : "");
+const panels = methods.map(([key, name, tint, year]) => {
+  const panel = stamp("article", "");
+  panel.className = "method-panel";
   panel.style.setProperty("--method", tint);
-  const image = stamp("img", "");
-  const caption = stamp("figcaption", "");
   const value = stamp("strong", "");
   const error = stamp("span", "");
   const detail = stamp("small", "");
-  caption.append(stamp("b",name), value, error, detail);
-  panel.append(image, caption);
+  const link = stamp("a", "");
+  const image = document.createElement("img");
+  image.alt = name + " 輸出圖";
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.append(image);
+  const figure = document.createElement("figure");
+  figure.append(link,stamp("figcaption",name));
+  get("comparison-outputs").append(figure);
+  panel.append(stamp("h3",name), stamp("small",year), value, error, detail);
   get("method-cards").append(panel);
-  return {key, name, image, value, error, detail};
+  return {key, value, error, detail, link, image};
 });
 
 function updateComparison() {
   const rows = frames();
   const row = rows[Number(get("frame").value)];
-  const distance = row.gt_m;
+  const {color, gt_m: distance} = row;
   get("frame-value").value = distance + " m";
-  for (const panel of panels) {
-    const {key, name, image, value, error, detail} = panel;
-    image.src = root + "C-E1_method_compare/panels/" + distance + "m_" + key + ".jpg";
-    image.alt = name + " 輸出圖";
+  const vehicle = get("vehicle-input");
+  vehicle.src = root + "scenario_replays/" + color + "_" + distance + "m.jpg";
+  const tint = color === "red" ? "#ff5c54" : "#5ef287";
+  const [left,top,right,bottom] = data.boxes[color + "_" + distance];
+  Object.assign(get("vehicle-box").style,{
+    left:left*100+"%", top:top*100+"%", width:(right-left)*100+"%",
+    height:(bottom-top)*100+"%", borderColor:tint
+  });
+  const colors = {red:"紅",green:"綠",blue:"藍",black:"黑"};
+  get("vehicle-caption").textContent = colors[color] + "色消防車 · GT " + distance + " m";
+  get("comparison-outputs").hidden = color !== "red";
+  for (const {key, value, error, detail, link, image} of panels) {
+    const raw = row[key + "_raw_m"];
+    if (color === "red") {
+      link.href = root + "C-E1_method_compare/panels/" + distance + "m_" + key + ".jpg";
+      image.src = link.href;
+    }
     value.textContent = format(row[key + "_m"]) + " m";
     error.textContent = "誤差 " + signed(Number(row[key + "_err_m"])) + " m";
-    detail.textContent = row[key + "_raw_m"] ? " · 原始 " + format(row[key + "_raw_m"]) + " m" : "";
+    detail.hidden = !raw;
+    detail.textContent = raw ? "原始 " + format(raw) + " m" : "";
   }
   plot(get("compare-chart"), methods.map(([key,,color]) => ({
     color,points:rows.map(item => [Number(item.gt_m),Number(item[key+"_m"])])
   })), Number(distance), "估測 (m)", true);
 }
 
-function togglePlayback() {
-  if (playback) {
+function updatePlayback() {
+  const playing = autoFrames && frameVisible && !document.hidden;
+  get("play").textContent = autoFrames ? "暫停" : "播放";
+  if (playing && !playback) {
+    playback = setInterval(() => {
+      const slider = get("frame");
+      slider.value = Number(slider.value) === 0 ? slider.max : Number(slider.value)-1;
+      updateComparison();
+    }, 1100);
+  } else if (!playing && playback) {
     clearInterval(playback);
     playback = null;
-    get("play").textContent = "播放";
-  } else {
-    get("play").textContent = "暫停";
-    playback = setInterval(() => {
-      get("frame").value = (Number(get("frame").value) + 11) % 12;
-      updateComparison();
-    }, 650);
   }
+}
+
+function stopPlayback() {
+  autoFrames = false;
+  updatePlayback();
+}
+
+function configureMotion() {
+  if (!("IntersectionObserver" in window)) return;
+  const seenVideos = new Set();
+  const startedVideos = new WeakSet();
+  function updateVideos() {
+    for (const video of document.querySelectorAll("video[data-autoplay]")) {
+      if (!seenVideos.has(video) || document.hidden || reducedMotion.matches) {
+        if (startedVideos.has(video)) video.pause();
+      } else if (!startedVideos.has(video)) {
+        startedVideos.add(video);
+        video.play().catch(() => {});
+      }
+    }
+  }
+  const videos = new IntersectionObserver(entries => {
+    for (const {target,isIntersecting} of entries) {
+      if (isIntersecting) seenVideos.add(target);
+      else {
+        seenVideos.delete(target);
+        if (startedVideos.has(target)) target.pause();
+        startedVideos.delete(target);
+      }
+    }
+    updateVideos();
+  }, {threshold:.25});
+  document.querySelectorAll("video[data-autoplay]").forEach(video => videos.observe(video));
+  const comparison = new IntersectionObserver(([entry]) => {
+    frameVisible = entry.isIntersecting;
+    updatePlayback();
+  }, {threshold:.35});
+  comparison.observe(get("method-cards"));
+  document.addEventListener("visibilitychange",() => {
+    if (!document.hidden) for (const video of seenVideos) startedVideos.delete(video);
+    updatePlayback();
+    updateVideos();
+  });
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) stopPlayback();
+    else for (const video of seenVideos) startedVideos.delete(video);
+    updateVideos();
+  });
 }
 const steps = ["0_input","1_mask","2_J","3_ac","4_bc","5_sharpness","6_result"];
 function updateSteps() {
@@ -155,7 +227,7 @@ function updateSteps() {
 }
 function updateOptics() {
   const selected = Number(get("optics").value);
-  const spec = [["f1.4_focus15m","f/1.4 · 對焦 15 m","#7af4c1"],["f1.4_focus7m","f/1.4 · 對焦 7 m","#7bc5ff"],["f22_focus15m","f/22 · 對焦 15 m","#ffce78"]];
+  const spec = [["f1.4_focus15m","f/1.4 · 對焦 15 m","#245a78"],["f1.4_focus7m","f/1.4 · 對焦 7 m","#246951"],["f22_focus15m","f/22 · 對焦 15 m","#a3592b"]];
   const rows = data.optics.filter(row => Number(row.distance_m) >= 1 && Number(row.distance_m) <= 7);
   const current = rows.find(row => Math.abs(Number(row.distance_m)-selected)<1e-5);
   get("optics-value").value = format(selected,2) + " m";
@@ -204,7 +276,7 @@ function updateLeaderboard() {
 function updateError() {
   const points = Object.entries(data.analysis.error_vs_distance[get("error-method").value])
     .map(([distance,rmse]) => [Number(distance),rmse]).sort((a,b) => a[0]-b[0]);
-  plot(get("error-chart"),[{color:"#7af4c1",points}],null,"RMSE (m)");
+  plot(get("error-chart"),[{color:"#245a78",points}],null,"RMSE (m)");
 }
 function updateAnalysis() {
   const url = root+"C-I1_analysis/"+get("analysis-select").value;
@@ -213,16 +285,23 @@ function updateAnalysis() {
 }
 function gallery() {
   const videos = [
-    ["消防車接近","C-A1_teaser/video.mp4","C-A1_teaser/poster.jpg","C-A1_teaser/per_frame.csv"],
+    ["車輛接近","scenario_replays/approach.mp4","scenario_replays/red_6.7m.jpg","scenario_replays/approach.csv"],
+    ["前車往返","scenario_replays/roundtrip.mp4","scenario_replays/red_3.7m.jpg","scenario_replays/roundtrip.csv"],
+    ["四車色切換","scenario_replays/colors.mp4","scenario_replays/blue_3.7m.jpg","scenario_replays/colors.csv"],
     ["輸入到輸出","C-C1_input_output/video.mp4","C-C1_input_output/poster.jpg","C-C1_input_output/per_frame.csv"],
-    ["四方法同步跑分","C-E1_method_compare/video.mp4","C-E1_method_compare/poster.jpg","C-E1_method_compare/per_frame.csv"],
     ["原圖與旋轉 180°","C-F1_before_after/video.mp4","C-F1_before_after/poster.jpg","C-F1_before_after/per_frame.csv"],
+    ["網頁操作與 CUDA 測距","scenario_replays/walkthrough.mp4","scenario_replays/walkthrough.jpg"]
   ];
   for (const [title, path, poster, csv] of videos) {
     const figure = stamp("figure","");
     figure.className = "card media-card";
     const video = Object.assign(document.createElement("video"),{src:root+path,poster:root+poster,preload:"none",controls:true,playsInline:true});
     video.setAttribute("aria-label",title);
+    if (path.endsWith("approach.mp4")) {
+      video.muted = true;
+      video.loop = true;
+      video.dataset.autoplay = "";
+    }
     const caption = stamp("figcaption",title+(csv ? " · " : ""));
     if (csv) caption.append(Object.assign(stamp("a","逐幀 CSV"),{href:root+csv,download:""}));
     figure.append(video,caption);
@@ -236,7 +315,6 @@ function gallery() {
     get("failures").append(figure);
   }
 }
-
 
 function setupVideoComparison() {
   const video = get("comparison-video");
@@ -256,18 +334,30 @@ function setupVideoComparison() {
     position += blend ? 31 : 27;
     return start / 30;
   });
+  const slider = get("video-frame");
+  slider.max = starts.length;
   let selected;
   function sync() {
     const index = starts.findLastIndex(start => start <= video.currentTime);
     const next = video.currentTime < position / 30 ? index + 1 : null;
     if (next === selected) return;
     selected = next;
+    if (selected !== null) slider.value = selected;
+    get("video-frame-value").value = selected === null ? "摘要" : selected + " / " + starts.length;
     plot(canvas, series, selected, "絕對誤差 (m)", false, "樣本序號");
   }
+  slider.addEventListener("input", () => {
+    if (!video.readyState) return;
+    video.pause();
+    video.currentTime = starts[Number(slider.value)-1] + 0.001;
+  });
   canvas.addEventListener("click", event => {
     const fraction = (event.offsetX - 51) / (canvas.clientWidth - 66);
     const index = Math.max(0, Math.min(starts.length - 1, Math.round(fraction * (starts.length - 1))));
-    if (video.readyState) video.currentTime = starts[index] + 0.001;
+    if (video.readyState) {
+      video.pause();
+      video.currentTime = starts[index] + 0.001;
+    }
   });
   video.addEventListener("timeupdate", sync);
   video.addEventListener("seeked", sync);
@@ -292,18 +382,19 @@ async function initialize() {
   const exposure = data.robustness.filter(row => row.case.startsWith("exposure_x")).map(row =>
     [Number(row.case.split("x").at(-1)),Number(row.cadfds_rmse_m)]);
   const texture = data.texture.map(row => [Number(row.texture_f22_mean),Number(row.cadfds_rmse_m)]);
-  plot(get("exposure-chart"),[{color:"#ffce78",points:exposure}],null,"RMSE (m)",false,"曝光乘數");
-  plot(get("texture-chart"),[{color:"#7bc5ff",points:texture}],null,"RMSE (m)",false,"紋理量",true);
+  plot(get("exposure-chart"),[{color:"#a3592b",points:exposure}],null,"RMSE (m)",false,"曝光乘數");
+  plot(get("texture-chart"),[{color:"#246951",points:texture}],null,"RMSE (m)",false,"紋理量",true);
   table(get("timing"),["管線","延遲中位數 (ms)","FPS","RMSE (m)"],Object.entries(data.timing.pipelines).map(([key,item]) =>
     [key,format(item.total_median_ms,2),format(item.fps,2),format(item.rmse_m,4)]));
   get("mask-timing").textContent = "YOLO + SAM 自動遮罩含 I/O 耗時 " + data.timing.auto_mask.wall_incl_io + " ms。此為獨立遮罩計時。";
-  const handlers = {frame:updateComparison,step:updateSteps,"step-distance":updateSteps,
+  const handlers = {color:() => {stopPlayback(); updateComparison();},frame:() => {stopPlayback(); updateComparison();},step:updateSteps,"step-distance":updateSteps,
     optics:updateOptics,"pair-kind":updatePair,"pair-distance":updatePair,split:updateSplit,sort:updateLeaderboard,
     "error-method":updateError,"analysis-select":updateAnalysis,
     view:() => {get("camera-image").src = root + "C-B1_camera_setup/" + get("view").value;}};
   for (const [id,handler] of Object.entries(handlers)) get(id).addEventListener("input",handler);
-  get("play").addEventListener("click",togglePlayback);
+  get("play").addEventListener("click",() => {autoFrames = !autoFrames; updatePlayback();});
   setupVideoComparison();
+  configureMotion();
   const wipe = get("wipe");
   function drag(event) {
     const rect = wipe.getBoundingClientRect();

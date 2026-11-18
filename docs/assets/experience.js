@@ -15,6 +15,7 @@ const startExperience=()=>{
   get('motion').addEventListener('click',()=>{motionEnabled=!motionEnabled;if(!motionEnabled)document.querySelectorAll('video').forEach(v=>delete v.dataset.manualPlaying);updateButtons();syncMedia();});
   get('step-play').addEventListener('click',()=>{stepEnabled=!stepEnabled;updateButtons();});
   get('step').addEventListener('input',()=>{stepEnabled=false;updateButtons();});
+  get('color').addEventListener('input',()=>{comparisonAuto=false;if(playback)togglePlayback();});
   get('frame').addEventListener('input',()=>{comparisonAuto=false;if(playback)togglePlayback();});
   get('play').addEventListener('click',()=>{comparisonAuto=Boolean(playback);});
   function updateButtons(){get('motion').textContent=tr(motionEnabled?'暫停動畫':'播放動畫');get('motion').setAttribute('aria-pressed',String(motionEnabled));get('step-play').textContent=tr(stepEnabled?'暫停流程':'播放流程');get('step-play').setAttribute('aria-pressed',String(stepEnabled));}

@@ -34,3 +34,5 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 參考 [MoGe-3](https://qft-333.github.io/moge3page/) 的流程控制、[GaMO](https://yichuanh.github.io/GaMO/) 的方法對照，以及 [BRDFusion](https://shigon255.github.io/brdfusion-page/) 的展示／方法／結果組織。程式碼與素材沿用本專案。
 
 瀏覽器檢查涵蓋：自動播放、全域暫停、流程動畫、中英文來回切換、舊入口導向、390 px 行動版。進階檢查包含 21 張流程影像、曲線跳轉、前後對照、排序與減少動態效果設定。
+
+遠端並行更新 `115f04d` 已整合：保留所有情境重播素材與 boxes 資料，加入四車色控制、目標框、影片樣本滑桿、接近／往返／四車色／操作錄影，原有研究背景與圖表收納於同頁展開區。原有數據欄位逐項比對未變。
