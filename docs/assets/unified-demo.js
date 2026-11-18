@@ -232,7 +232,7 @@ function updateAnalysis() {
 function gallery() {
   const videos = [
     ["車輛接近","scenario_replays/approach.mp4","scenario_replays/red_6.7m.jpg","scenario_replays/approach.csv"],
-    ["前車往返","scenario_replays/roundtrip.mp4","scenario_replays/red_3.7m.jpg","scenario_replays/roundtrip.csv"],
+    ["光圈與失焦原理","C-D1_defocus_theory/video.mp4","C-D1_defocus_theory/poster.jpg",""],
     ["四車色切換","scenario_replays/colors.mp4","scenario_replays/blue_3.7m.jpg","scenario_replays/colors.csv"],
 
   ];

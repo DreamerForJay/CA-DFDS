@@ -286,5 +286,11 @@
   "資料集手繪遮罩展示": "Recorded manual-mask visualization",
   "此樣本尚無公開遮罩圖；可查看紅車 1.2、3.7、6.7 m 的既有遮罩。": "A mask image is not published for this sample. Recorded masks are available for the red vehicle at 1.2, 3.7 and 6.7 m.",
   "車輛框": "Vehicle box",
-  "誤差 (m)": "Error (m)"
+  "誤差 (m)": "Error (m)",
+  "光學設定": "Optical setup",
+  "車距": "Vehicle distance",
+  "模糊直徑": "Blur diameter",
+  "薄透鏡模型示意 · 非等比例；點圖暫停／繼續。": "Thin-lens model · Not to scale. Tap to pause / resume.",
+  "光圈與失焦原理": "Aperture and defocus",
+  "車距變化、光學原理與車色比較：每段呈現不同重點。": "Distance changes, optical principles and vehicle colors: a distinct purpose for each clip."
 }

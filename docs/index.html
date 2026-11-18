@@ -7,7 +7,7 @@
   <title>CA-DFDS — 單眼散焦測距</title>
   <link rel="stylesheet" href="assets/unified.css">
   <script src="assets/unified-demo.js" defer></script>
-<link rel="stylesheet" href="assets/unified-polish.css"><script src="assets/language.js" defer></script><script src="assets/experience.js" defer></script><link rel="stylesheet" href="assets/luminous.css"><script src="assets/luminous.js" defer></script><link rel="stylesheet" href="assets/mobile-demo.css"><script src="assets/mobile-demo.js" defer></script><link rel="stylesheet" href="assets/browser-tool.css"><script src="assets/browser-tool.js" defer></script></head>
+<link rel="stylesheet" href="assets/unified-polish.css"><script src="assets/language.js" defer></script><script src="assets/experience.js" defer></script><link rel="stylesheet" href="assets/luminous.css"><script src="assets/luminous.js" defer></script><link rel="stylesheet" href="assets/mobile-demo.css"><script src="assets/mobile-demo.js" defer></script><link rel="stylesheet" href="assets/browser-tool.css"><script src="assets/browser-tool.js" defer></script><link rel="stylesheet" href="assets/demo-refinement.css"><script src="assets/camera-motion.js" defer></script></head>
 <body><div class="pointer-light" aria-hidden="true"></div><div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
 <header><nav aria-label="頁面導覽">
   <a class="brand" href="#top">CA<span>–</span>DFDS</a>
@@ -17,7 +17,7 @@
   <section class="hero">
     <div class="hero-copy"><p class="venue">2026 產學創新實作競賽 · D86</p>
       <p class="eyebrow">MONOCULAR DEPTH FROM DEFOCUS</p>
-      <div class="title-row"><h1>CA-DFDS</h1><div class="title-logos" aria-label="Affiliations"><a class="logo-seal" href="https://www.ntu.edu.tw/" aria-label="National Taiwan University"><img src="assets/logo-ntu.png" alt="臺大校徽"></a><a class="logo-rit" href="https://www.rit.edu/" aria-label="Rochester Institute of Technology"><img src="assets/logo-rit.png" alt="RIT"></a><a class="logo-seal" href="https://www.ncue.edu.tw/" aria-label="National Changhua University of Education"><img src="assets/logo-ncue.png" alt="彰師大校徽"></a></div></div><p class="project-subtitle">單眼失焦車距估測系統</p>
+      <div class="title-row"><h1><span>CA-DFDS</span><span class="project-subtitle">單眼失焦車距估測系統</span></h1><div class="title-logos" aria-label="Affiliations"><a class="logo-seal" href="https://www.ntu.edu.tw/" aria-label="National Taiwan University"><img src="assets/logo-ntu.png" alt="臺大校徽"></a><a class="logo-rit" href="https://www.rit.edu/" aria-label="Rochester Institute of Technology"><img src="assets/logo-rit.png" alt="RIT"></a><a class="logo-seal" href="https://www.ncue.edu.tw/" aria-label="National Changhua University of Education"><img src="assets/logo-ncue.png" alt="彰師大校徽"></a></div></div>
       <p>單張影像估測車距。結合色彩感知與物理光學，在 480 張 CARLA 影像達到 0.337 m RMSE。</p>
       <div class="paper-authors"><span>Yu-Sen Wang<sup>1</sup></span><a href="https://www.rit.edu/directory/clkiee-chunghui-kuo">Chunghui Kuo<sup>2</sup></a><a href="https://xn--zwq108c.tw/research/">Chieh-Lun Yang<sup>3</sup></a><a href="https://people.csie.ncue.edu.tw/icchang/">Ing-Chau Chang<sup>3</sup></a></div><p class="affiliations"><span><sup>1</sup> 國立臺灣大學</span><span><sup>2</sup> Rochester Institute of Technology</span><span><sup>3</sup> 國立彰化師範大學</span></p><div class="actions"><a class="button primary" href="#system-demo">直接操作 Demo</a><a class="button" href="#method">系統架構</a></div>
     </div>
@@ -55,7 +55,7 @@
       <article class="card">
         <h3>鏡頭與測距設定</h3>
         <select id="view" hidden><option value="camera_views.jpg">camera_views.jpg</option></select>
-        <div class="camera-spec"><span><b>40 mm</b><small>鏡頭焦距</small></span><span><b>f/1.4</b><small>光圈</small></span><span><b>15 m</b><small>對焦平面</small></span></div><svg class="camera-diagram" viewBox="0 0 600 190" role="img" aria-label="Camera, vehicle measuring interval and rear focus plane"><path class="ray" d="M50 100L530 25M50 100L530 170"/><path class="axis" d="M50 100H550"/><rect x="20" y="79" width="45" height="42" rx="7"/><path class="focus-plane" d="M530 20V175"/><path class="interval" d="M120 150H350"/><g class="car-symbol"><path d="M200 100V78L212 58H254L269 78V100Z"/><circle cx="213" cy="102" r="7"/><circle cx="257" cy="102" r="7"/></g><text x="235" y="180" text-anchor="middle">1.2–6.7 m</text><text x="530" y="14" text-anchor="middle">15 m</text></svg><button class="image-zoom" data-zoom="camera-image" aria-label="Enlarge camera views"><img id="camera-image" src="assets/demo/C-B1_camera_setup/camera_views.jpg" alt="CARLA 拍攝視角"><span>放大查看 ↗</span></button>
+        <div class="camera-spec"><span><b>40 mm</b><small>鏡頭焦距</small></span><span><b>f/1.4</b><small>光圈</small></span><span><b>15 m</b><small>對焦平面</small></span></div><svg id="camera-motion" tabindex="0" class="camera-diagram" viewBox="0 0 600 190" role="img" aria-label="Camera, vehicle measuring interval and rear focus plane"><path class="ray" d="M50 100L530 25M50 100L530 170"/><path class="axis" d="M50 100H550"/><rect x="20" y="79" width="45" height="42" rx="7"/><path class="focus-plane" d="M530 20V175"/><path class="interval" d="M120 150H350"/><g id="camera-car" class="car-symbol"><path d="M200 100V78L212 58H254L269 78V100Z"/><circle cx="213" cy="102" r="7"/><circle cx="257" cy="102" r="7"/></g><text x="235" y="180" text-anchor="middle">1.2–6.7 m</text><text id="camera-focus-label" x="530" y="14" text-anchor="middle">15 m</text></svg><div class="camera-interaction"><label for="camera-setting">光學設定</label><select id="camera-setting"><option value="f1.4_focus15m">f/1.4 · 對焦 15 m</option><option value="f22_focus15m">f/22 · 對焦 15 m</option><option value="f1.4_focus7m">f/1.4 · 對焦 7 m</option></select><label for="camera-distance">車距</label><input id="camera-distance" type="range" min="1.2" max="6.7" step="0.05" value="3.7"><div class="camera-numbers"><span>車距<strong id="camera-distance-value">3.70 m</strong></span><span>模糊直徑<strong id="camera-blur-value">13.27 px</strong></span></div><p class="note">薄透鏡模型示意 · 非等比例；點圖暫停／繼續。</p></div><button class="image-zoom" data-zoom="camera-image" aria-label="Enlarge camera views"><img id="camera-image" src="assets/demo/C-B1_camera_setup/camera_views.jpg" alt="CARLA 拍攝視角"><span>放大查看 ↗</span></button>
         <p>對焦平面位於測距區間之後，讓模糊量與距離維持單調關係。</p>
       </article>
     </div>
@@ -116,7 +116,7 @@
   </section>
 <section id="gallery">
     <p class="eyebrow">VIDEO GALLERY</p><h2>情境影片</h2>
-    <p>CARLA 離散距離影像重播：接近、往返與四車色比較。</p>
+    <p>車距變化、光學原理與車色比較：每段呈現不同重點。</p>
     <div class="grid three" id="videos"></div>
   </section>
 
