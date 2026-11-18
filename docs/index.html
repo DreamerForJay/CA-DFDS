@@ -110,6 +110,8 @@ footer{margin-top:40px;padding:30px 0 50px;border-top:1px solid var(--rule);font
   header.hero{padding:52px 0 20px} .core{padding:20px} .eq{font-size:17px} h2{font-size:25px}
 }
 </style>
+<link rel="stylesheet" href="assets/showcase.css">
+<script src="assets/showcase.js" defer></script>
 </head>
 <body>
 <button class="theme" id="themeBtn" aria-label="Toggle color theme">◐ Theme</button>
@@ -131,14 +133,24 @@ footer{margin-top:40px;padding:30px 0 50px;border-top:1px solid var(--rule);font
       <a class="btn" href="#video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>Video</a>
       <a class="btn" href="#demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>Demo</a>
       <a class="btn" href="assets/poster.pdf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Poster</a>
-      <span class="btn off" title="Code release pending"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1a3.6 3.6 0 0 1 .1 2.7 3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>Code (soon)</span>
+      <a class="btn" href="https://github.com/DreamerForJay/CA-DFDS-finals"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1a3.6 3.6 0 0 1 .1 2.7 3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>Code</a>
     </div>
 
-    <div class="teaser" id="video"><div id="ytSlot"></div></div>
+    <div class="teaser showcase" id="video">
+<div class="showcase-heading"><div><span class="eyebrow">SEE CA-DFDS IN ACTION</span><h2>從一張失焦影像，看見車距</h2><p>輸入影像 → 色彩感知清晰度 → 距離估測</p></div><a class="text-link" href="#demo">探索處理流程 ↘</a></div>
+<video id="showcase-video" src="assets/demo/C-A1_teaser/video.mp4" poster="assets/demo/C-A1_teaser/poster.jpg" controls muted playsinline preload="metadata" aria-label="CA-DFDS 展示影片"></video>
+<div class="showcase-caption"><strong id="clip-title">01 / 單張影像到車距</strong><span id="clip-note">CARLA · 12 個離散距離影像 · 6.7 → 1.2 m</span></div>
+<div class="clip-list" aria-label="選擇展示影片">
+<button type="button" data-clip="0" aria-pressed="true"><img src="assets/demo/C-A1_teaser/poster.jpg" alt=""><span><small>01 · OVERVIEW</small><b>輸入到估距</b></span></button>
+<button type="button" data-clip="1" aria-pressed="false"><img src="assets/demo/C-E1_method_compare/poster.jpg" alt=""><span><small>02 · COMPARISON</small><b>四方法同幀比較</b></span></button>
+<button type="button" data-clip="2" aria-pressed="false"><img src="assets/intro_poster.jpg" alt=""><span><small>03 · PRESENTATION</small><b>完整作品介紹</b></span></button>
+</div><p id="media-status" role="status"></p>
+</div>
     <p class="tldr"><b>TL;DR</b>&nbsp; One photo, one camera: focusing the lens <b>behind</b> the 1–7 m range makes blur change in a single direction, and measuring sharpness in the <b>CIECAM02</b> perceptual color space inside the vehicle mask keeps the estimate stable across vehicle colors.</p>
   </div>
 </header>
 
+<nav class="section-nav" aria-label="專案導覽"><a href="#video">影片展示</a><a href="#method">核心方法</a><a href="#results">實驗結果</a><a href="#demo">互動探索</a><a href="#limits">限制</a></nav>
 <main class="wrap">
   <div class="stats">
     <div class="stat"><div class="v ours">0.16 <small>m</small></div><div class="l">RMSE, white vehicle<br>dual-aperture DFD ≥ 4.92 m</div></div>
@@ -227,11 +239,19 @@ footer{margin-top:40px;padding:30px 0 50px;border-top:1px solid var(--rule);font
     <p class="small muted">Benchmark and baselines from the prior DFDS study (Chang et al., 2026).</p>
   </section>
 
-  <section id="demo">
-    <p><a class="btn" href="demo/">Interactive demo and frame errors</a> <a class="btn" href="https://drive.google.com/file/d/1vTQBF6ip9IP5NBCEDEwuGuHkvaHctTx7/view">Scenario replays and CSV</a></p>
-    <h2>Demo: a vehicle approaching from 6.7 m to 1.2 m</h2>
-    <figure><video src="assets/demo.mp4" poster="assets/demo_new.jpg" controls muted playsinline preload="metadata"></video>
-      <figcaption>Yellow: vehicle mask. Right panel: ground truth, CA-DFDS estimate and error per frame. Single-frame RMSE for red / green / blue vehicles: 0.29 / 0.20 / 0.34 m (colors not used in calibration).</figcaption></figure>
+  <section id="demo" class="demo-section">
+    <div class="section-intro"><span class="eyebrow">EXPLORE THE METHOD</span><h2>同一張影像，逐步拆解</h2><p>選擇近、中、遠樣本，查看每一步如何把車身清晰度轉成距離。</p></div>
+    <div class="process-card">
+      <div class="process-toolbar"><label for="sample-distance">樣本距離</label><select id="sample-distance"><option value="1.2m">近距離 · 1.2 m</option><option value="3.7m" selected>中距離 · 3.7 m</option><option value="6.7m">遠距離 · 6.7 m</option></select><span>CARLA · 紅色車輛</span></div>
+      <div class="process-layout"><div class="process-image"><img id="process-image" src="assets/demo/C-C1_input_output/steps/3.7m/0_input.jpg" alt="3.7 m 原始失焦影像" loading="lazy"></div><div class="process-copy"><span class="eyebrow" id="process-number">STEP 01 / 07</span><h3 id="process-title">原始失焦影像</h3><p id="process-description">固定 f/1.4 光圈，對焦於 15 m；車輛位於對焦平面前方。</p><div class="sample-numbers" id="sample-numbers"></div><a href="demo/#method">開啟完整光學互動 ↗</a></div></div>
+      <div class="process-steps" aria-label="處理步驟"><button type="button" data-process="0" aria-pressed="true"><small>01</small>輸入</button><button type="button" data-process="1" aria-pressed="false"><small>02</small>車輛遮罩</button><button type="button" data-process="2" aria-pressed="false"><small>03</small>明度 J</button><button type="button" data-process="3" aria-pressed="false"><small>04</small>彩度 a꜀</button><button type="button" data-process="4" aria-pressed="false"><small>05</small>彩度 b꜀</button><button type="button" data-process="5" aria-pressed="false"><small>06</small>清晰度</button><button type="button" data-process="6" aria-pressed="false"><small>07</small>估測結果</button></div>
+      <p class="source-note">此展示使用資料集手繪遮罩。數值與影像來自同一批既有推論輸出。</p>
+    </div>
+    <div class="explore-grid">
+      <a class="explore-card" href="demo/#compare"><img src="assets/demo/C-E1_method_compare/poster.jpg" alt="四方法比較畫面" loading="lazy"><div><span class="eyebrow">COMPARE</span><h3>誤差隨距離如何變化？ <span>↗</span></h3><p>四方法同幀比較、逐幀誤差曲線，點選曲線跳到對應樣本。</p></div></a>
+      <a class="explore-card" href="demo/#ablation"><img src="assets/demo/C-F1_before_after/poster.jpg" alt="原圖與旋轉影像對照" loading="lazy"><div><span class="eyebrow">INSPECT</span><h3>影像變了，估距會變嗎？ <span>↗</span></h3><p>拖曳檢視光圈、旋轉與清晰度計算的差異。</p></div></a>
+    </div>
+    <details class="camera-detail"><summary>相機放在哪裡？查看拍攝配置與資料來源</summary><img src="assets/demo/C-B1_camera_setup/camera_views.jpg" alt="CARLA 車載相機、側面與俯視配置示意" loading="lazy"><p>40 mm 鏡頭、f/1.4、對焦 15 m，相機高度 0.8 m。側視與俯視為配置示意，影片為離散距離影像重播。</p><a href="https://github.com/DreamerForJay/CA-DFDS-finals/tree/ecf437c9bc9354010261a41300158071e151f04e/results/demo">素材與數據來源 ↗</a> · <a href="https://drive.google.com/drive/folders/1dhRViJVTi19B6Qj7G2V88P_CmXReAIpD">雲端素材 ↗</a></details>
   </section>
 
   <section id="apps">
@@ -255,14 +275,7 @@ footer{margin-top:40px;padding:30px 0 50px;border-top:1px solid var(--rule);font
 
 <div class="lightbox" id="lb" role="dialog" aria-label="Enlarged figure"><img alt=""></div>
 <script>
-/* 上傳 YouTube 後把影片 ID 填在這裡（https://www.youtube.com/watch?v=XXXX 的 XXXX）。留空則播放 assets/intro.mp4。 */
-const YOUTUBE_ID = '';
 (function(){
-  const slot = document.getElementById('ytSlot');
-  slot.innerHTML = YOUTUBE_ID
-    ? '<div style="aspect-ratio:16/9"><iframe style="width:100%;height:100%;border:0;border-radius:10px" src="https://www.youtube-nocookie.com/embed/' + YOUTUBE_ID + '" title="CA-DFDS video" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>'
-    : '<video src="assets/intro.mp4" poster="assets/intro_poster.jpg" controls playsinline preload="metadata"></video>';
-
   const fImg = document.getElementById('focusImg'), fCap = document.getElementById('focusCap');
   const FOCUS = { '7m': ['assets/defocus_7m.jpg', 'Focus at 7 m: blur falls to zero at 7 m and rises again behind it — the same blur can mean two distances.'],
                   '15m': ['assets/defocus_15m.jpg', 'Focus at 15 m: blur decreases monotonically over 1–7 m — no ambiguity. f/1.4 is the most distance-sensitive.'] };
