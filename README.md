@@ -69,3 +69,7 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 - 恢復原始架構圖直接顯示；移除五方塊架構、結論區與本機工具入口。
 - 手機比較表完整直向呈現，CA-DFDS 列與距離／誤差統一紅色；導覽重新對齊並加入游標光暈。
 - 驗證全部 48 筆結果／框、遮罩來源、20 組語系／主題／尺寸與表格無橫向捲動。
+
+## Gradio 試作
+
+另提供 [Gradio 操作介面與部署說明](gradio_demo/README.md)，沿用 48 筆現有資料。已驗證回呼、中英文、車輛框、可用遮罩、320–1440 px 版面。正式 GitHub Pages 仍使用現有靜態工具；Gradio 公開使用需另外部署 Python 服務。Dockerfile 已準備，尚未執行容器部署驗證。
