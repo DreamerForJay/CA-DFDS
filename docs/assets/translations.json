@@ -274,5 +274,17 @@
   "前車往返": "Vehicle round trip",
   "四車色切換": "Four vehicle colors",
   "色彩": "Color",
-  "桌面 GUI：": "Desktop GUI:"
+  "桌面 GUI：": "Desktop GUI:",
+  "操作 Demo": "Try demo",
+  "直接操作 Demo": "Try the demo",
+  "車距估測操作台": "Vehicle distance explorer",
+  "選擇車色與距離，查看車輛框、遮罩與估測結果。": "Choose a vehicle color and distance to inspect the box, mask and estimated distance.",
+  "既有 CARLA 樣本 · 手繪遮罩 · 預先量測結果": "Existing CARLA samples · manual masks · recorded measurements",
+  "CA-DFDS · 本作品": "CA-DFDS · Ours",
+  "距離誤差": "Distance error",
+  "距離選擇": "Select distance",
+  "資料集手繪遮罩展示": "Recorded manual-mask visualization",
+  "此樣本尚無公開遮罩圖；可查看紅車 1.2、3.7、6.7 m 的既有遮罩。": "A mask image is not published for this sample. Recorded masks are available for the red vehicle at 1.2, 3.7 and 6.7 m.",
+  "車輛框": "Vehicle box",
+  "誤差 (m)": "Error (m)"
 }

@@ -26,8 +26,8 @@ function table(el, headings, rows, highlight = () => false) {
   const body = el.createTBody();
   rows.forEach(row => {
     const tr = body.insertRow();
-    if (highlight(row)) tr.className = "ours";
-    row.forEach(value => tr.insertCell().textContent = value);
+    if (highlight(row) || String(row[0]).startsWith("CA-DFDS")) tr.className = "ours";
+    row.forEach((value,index) => {const cell=tr.insertCell();cell.textContent=value;cell.dataset.label=headings[index];});
   });
 }
 
