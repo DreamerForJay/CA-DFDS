@@ -8,31 +8,29 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 - 作者：王宇森¹、郭仲輝²、楊杰倫³、張英超³
   ¹國立臺灣大學 工程科學及海洋工程學系　²Rochester Institute of Technology　³國立彰化師範大學 資訊工程學系
 
-## 內容
+## 整合版網站
 
-| 路徑 | 說明 |
-|---|---|
-| `docs/index.html` | 專案網頁（單一 HTML，支援深色模式與手機版） |
-| `docs/assets/intro.mp4` | 配音介紹影片（v6） |
-| `docs/assets/demo.mp4` | 系統展示：測試距離 6.7 m → 1.2 m |
-| `docs/assets/poster.pdf` | A1 海報（v20） |
-| `docs/assets/demo/` | Demo 素材（影片、步驟圖、比較數據、`manifest.json`），由 CA-DFDS-finals `scripts/export_web_assets.py` 產生 |
+`docs/index.html` 是唯一主頁與 Demo。舊 `/demo/` 入口會保留查詢參數及章節錨點，導向主頁。
 
-## 更新影片連結
+- `assets/unified-demo.js`：既有資料讀取、比較圖表、影格切換、前後拖曳、排行榜。
+- `assets/experience.js`：可見區域自動靜音播放、推論動畫、全域暫停、系統流程高亮。
+- `assets/language.js` 與 `translations.json`：中英文介面，支援 `?lang=en`／`?lang=zh` 與本機偏好。
+- `assets/unified.css`、`unified-polish.css`：深藍底、青藍輔色、紅色 CA-DFDS，桌機與手機版面。
+- `demo/data.json` 與 `assets/demo/`：原有數據與影片，未重新推論或修改量測結果。
 
-主頁影片選單設定在 `docs/assets/showcase.js` 的 `clips`。預設播放 C-A1 三聯展示，可切換 C-E1 四方法比較及原有 `assets/intro.mp4` 完整介紹。新增影片時同步更新主頁縮圖與說明。
+影片在可見範圍自動循環，離開畫面或切換分頁即暫停。頂部可暫停全部動畫，推論流程也可單獨暫停。尊重系統減少動態效果設定。瀏覽器若阻擋自動播放，可使用原生播放控制。圖內文字與影片字幕沿用原素材，不作翻譯改圖。
 
-## 數據來源
+## 素材與範圍
 
-網頁所有數字皆取自作品說明書、論文與海報（CARLA 1.2–6.7 m 測試距離；20–110 cm 實拍結果引自前期研究 DFDS）。尚待補齊的項目見 [`docs/TODO.md`](docs/TODO.md)。
-
-
-## 2026-11-18 主頁素材整合
-
-- 主頁 `#video` 直接切換 3 支既有影片，不自動播放；保留完整介紹影片。
-- `#demo` 整合 C-C1 近／中／遠 21 張處理影像；數值直接讀取 `steps.json`。
-- C-E1 比較與 C-F1 前後差異連到完整互動頁；C-B1 配置圖放在可展開的說明。
 - 雲端來源：https://drive.google.com/drive/folders/1dhRViJVTi19B6Qj7G2V88P_CmXReAIpD
-- 核對實驗 repo：`ecf437c9bc9354010261a41300158071e151f04e`。本次使用網站 repo 已同步的壓縮素材，未重新推論、未變更結果數據。
-- 尚未完成的連續 CARLA 行駛、第三人稱影片、桌面 GUI 錄影及實拍連續影片未新增為展示成果。情境 ZIP 保留於雲端，避免將離散回放當作實車錄影。
-- 驗證：3 支影片載入與播放、3 距離 × 7 步影像切換、390 px 手機版寬度、深色模式、JavaScript 錯誤檢查。
+- 實驗 repo：`DreamerForJay/CA-DFDS-finals`，核對 `ecf437c9bc9354010261a41300158071e151f04e` 素材清單。
+- 使用 C-A1 展示、C-B1 配置、C-C1 流程、C-E1 比較、C-F1 對照及現有分析圖表。
+- 完整介紹保留在影片區可展開面板。未完成的 YouTube、連續行駛、第三人稱、GUI 錄影及實拍不放占位內容。
+- 48 張展示樣本和 480 張測試集結果分開標示；影片為離散影像重播，動畫不是瀏覽器即時推論。
+- 海報 PDF、簡報與已繳件資料均未修改。
+
+## 參考與驗證
+
+參考 [MoGe-3](https://qft-333.github.io/moge3page/) 的流程控制、[GaMO](https://yichuanh.github.io/GaMO/) 的方法對照，以及 [BRDFusion](https://shigon255.github.io/brdfusion-page/) 的展示／方法／結果組織。程式碼與素材沿用本專案。
+
+瀏覽器檢查涵蓋：自動播放、全域暫停、流程動畫、中英文來回切換、舊入口導向、390 px 行動版。進階檢查包含 21 張流程影像、曲線跳轉、前後對照、排序與減少動態效果設定。

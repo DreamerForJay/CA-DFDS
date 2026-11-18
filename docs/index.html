@@ -1,321 +1,124 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CA-DFDS: Color-Aware Depth from Defocus with Segmentation</title>
-<meta name="description" content="CA-DFDS estimates vehicle distance from a single defocused image by focusing behind the measuring range and computing CIECAM02 perceptual sharpness inside the vehicle mask.">
-<meta property="og:title" content="CA-DFDS: Color-Aware Depth from Defocus with Segmentation">
-<meta property="og:description" content="Monocular vehicle distance from one defocused image — back-focused optics + CIECAM02 perceptual sharpness.">
-<meta property="og:image" content="assets/intro_poster.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#ffffff; --surface:#f4f7fb; --card:#ffffff; --ink:#15191f; --muted:#56606c; --faint:#8a939e; --rule:#dfe5ec;
-  --accent:#1f4e79; --accent-2:#2e6da4; --accent-soft:#eaf1f8; --zebra:#f3f6fa; --ours:#c62828; --ours-soft:#fdecec;
-  --shadow:0 1px 2px rgba(15,30,50,.05),0 8px 28px rgba(15,30,50,.07);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#10141a; --surface:#171e27; --card:#1b232e; --ink:#e8edf3; --muted:#a9b5c2; --faint:#7f8b98; --rule:#2b3644;
-    --accent:#86b6e4; --accent-2:#a2c8ee; --accent-soft:#1d2b3b; --zebra:#1f2834; --ours:#ff7b70; --ours-soft:#3a2326; --shadow:none;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#10141a; --surface:#171e27; --card:#1b232e; --ink:#e8edf3; --muted:#a9b5c2; --faint:#7f8b98; --rule:#2b3644;
-  --accent:#86b6e4; --accent-2:#a2c8ee; --accent-soft:#1d2b3b; --zebra:#1f2834; --ours:#ff7b70; --ours-soft:#3a2326; --shadow:none;
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:16.5px/1.7 Inter,"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:var(--accent-2);text-decoration:none} a:hover{text-decoration:underline}
-img,video{max-width:100%;display:block}
-.wrap{max-width:980px;margin:0 auto;padding:0 20px}
-header.hero{padding:64px 0 26px;text-align:center}
-.logo{font-size:clamp(46px,8vw,76px);font-weight:800;letter-spacing:-.03em;line-height:1;margin:0;color:var(--accent)}
-.subtitle{font-size:clamp(19px,2.6vw,26px);font-weight:700;line-height:1.35;margin:14px auto 4px;max-width:780px}
-.subtitle-zh{color:var(--muted);font-family:"Noto Sans TC",sans-serif;font-size:15.5px;margin:0 0 18px}
-.authors{font-size:18px;margin:0 0 2px;display:flex;flex-wrap:wrap;justify-content:center;gap:2px 18px}
-.authors a{color:var(--accent-2);font-weight:500}
-.authors span{color:var(--ink);font-weight:500}
-.affil{font-size:14px;color:var(--muted);margin:4px 0 0;display:flex;flex-wrap:wrap;justify-content:center;gap:0 16px}
-.venue{font-weight:700;font-size:16px;margin:14px 0 0}
-.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 17px;border-radius:999px;background:#2b2f36;color:#fff;font-weight:600;font-size:14.5px}
-.btn:hover{text-decoration:none;background:#11151a}
-.btn svg{width:16px;height:16px}
-.btn.off{background:#c3c9d1;cursor:not-allowed}
-.teaser{margin:30px 0 8px;background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
-.teaser video{width:100%;border-radius:10px;background:#000;aspect-ratio:16/9}
-.tldr{margin:18px auto 0;max-width:860px;font-size:17px;text-align:left}
-.tldr b{color:var(--accent)}
-section{padding:46px 0 10px}
-h2{font-size:30px;letter-spacing:-.01em;margin:0 0 16px;text-align:center}
-h3{font-size:20px;margin:30px 0 10px}
-p{margin:0 0 14px} .muted{color:var(--muted)} .small{font-size:14px}
-.center{text-align:center}
-.lead{max-width:860px;margin:0 auto 14px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:6px 0 4px}
-.stat{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:18px 12px;text-align:center;box-shadow:var(--shadow)}
-.stat .v{font-size:31px;font-weight:800;letter-spacing:-.02em;line-height:1.15;color:var(--accent)}
-.stat .v.ours{color:var(--ours)}
-.stat .v small{font-size:16px;font-weight:600}
-.stat .l{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.45}
-figure{margin:16px 0 6px}
-figure img,figure video{border-radius:12px;border:1px solid var(--rule);background:#fff;width:100%}
-figcaption{font-size:14px;color:var(--muted);margin-top:8px;text-align:center}
-.zoom{cursor:zoom-in}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
-.step{background:var(--surface);border-radius:12px;padding:16px 18px;border-top:3px solid var(--accent)}
-.step .k{font:500 12.5px "JetBrains Mono",monospace;color:var(--accent-2);letter-spacing:.06em}
-.step b{display:block;margin:4px 0}
-.core{background:var(--surface);border-radius:18px;padding:26px 28px;margin-top:10px}
-.eyebrow{font:600 12px "JetBrains Mono",monospace;letter-spacing:.12em;color:var(--accent-2);text-transform:uppercase}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
-.eq{font-family:"Cambria Math","STIX Two Math",Georgia,serif;font-size:21px;text-align:center;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:15px 12px;margin:12px 0;overflow-x:auto}
-.eq .ours{color:var(--ours);font-weight:700}
-.seg{display:inline-flex;flex-wrap:wrap;justify-content:center;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:4px;gap:4px;margin:6px 0 12px}
-.seg button{border:0;background:transparent;color:var(--muted);font:600 14px Inter,"Noto Sans TC",sans-serif;padding:7px 16px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
-.bars{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
-.bar-row{display:grid;grid-template-columns:270px 1fr 56px;align-items:center;gap:12px;margin:10px 0;font-size:15px}
-.bar-track{height:22px;background:var(--zebra);border-radius:6px;overflow:hidden}
-.bar-fill{height:100%;border-radius:6px;background:#9aa3ad;transition:width .45s ease}
-.bar-row.ours .bar-fill{background:var(--ours)} .bar-row.ours{color:var(--ours);font-weight:700}
-.bar-val{text-align:right;font-variant-numeric:tabular-nums}
-.tbl{overflow-x:auto;border-radius:12px;border:1px solid var(--rule);margin:10px 0 6px}
-table{width:100%;border-collapse:collapse;font-size:15px;font-variant-numeric:tabular-nums}
-th,td{padding:10px 12px;text-align:center}
-thead th{background:var(--accent);color:#fff;font-weight:600}
-:root[data-theme="dark"] thead th{color:#10141a}
-thead th.ours{background:var(--ours);color:#fff}
-tbody tr:nth-child(even) td{background:var(--zebra)}
-td:first-child,th:first-child{text-align:left}
-tbody tr.ours td{background:var(--ours-soft);color:var(--ours);font-weight:700}
-tbody td.ours{background:var(--ours-soft)!important;color:var(--ours);font-weight:700}
-.apps{display:grid;gap:12px;margin-top:6px}
-.app{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--accent);border-radius:12px;padding:16px 20px}
-.app h4{margin:0;font-size:17px;color:var(--accent)}
-.app p{margin:0;font-size:15px;color:var(--muted)}
-.limit{background:var(--surface);border-radius:12px;padding:16px 20px;font-size:15px;color:var(--muted)}
-footer{margin-top:40px;padding:30px 0 50px;border-top:1px solid var(--rule);font-size:13px;color:var(--faint);text-align:center}
-.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:20px;z-index:10;cursor:zoom-out}
-.lightbox.on{display:flex} .lightbox img{max-height:94vh;border-radius:8px;background:#fff}
-.theme{position:fixed;top:14px;right:14px;z-index:5;border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
-@media (max-width:760px){
-  .stats{grid-template-columns:1fr 1fr} .steps,.two{grid-template-columns:1fr}
-  .app{grid-template-columns:1fr;gap:4px} .bar-row{grid-template-columns:1fr 54px} .bar-row .bar-label{grid-column:1 / -1}
-  header.hero{padding:52px 0 20px} .core{padding:20px} .eq{font-size:17px} h2{font-size:25px}
-}
-</style>
-<link rel="stylesheet" href="assets/showcase.css">
-<script src="assets/showcase.js" defer></script>
-</head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CA-DFDS 單眼散焦測距的 CARLA 互動展示與實驗比較">
+  <title>CA-DFDS — 單眼散焦測距</title>
+  <link rel="stylesheet" href="assets/unified.css">
+  <script src="assets/unified-demo.js" defer></script>
+<link rel="stylesheet" href="assets/unified-polish.css"><script src="assets/language.js" defer></script><script src="assets/experience.js" defer></script></head>
 <body>
-<button class="theme" id="themeBtn" aria-label="Toggle color theme">◐ Theme</button>
-
-<header class="hero">
-  <div class="wrap">
-    <h1 class="logo">CA-DFDS</h1>
-    <p class="subtitle">Color-Aware Depth from Defocus with Segmentation<br>for Monocular Vehicle Distance Estimation</p>
-    <p class="subtitle-zh">結合色彩感知、影像分割與物理光學之單眼失焦車距估測系統</p>
-    <div class="authors">
-      <span>Yu-Sen Wang<sup>1</sup></span>
-      <a href="https://www.rit.edu/directory/clkiee-chunghui-kuo" target="_blank" rel="noopener">Chunghui Kuo<sup>2</sup></a>
-      <a href="https://xn--zwq108c.tw/research/" target="_blank" rel="noopener">Chieh-Lun Yang<sup>3</sup></a>
-      <a href="https://people.csie.ncue.edu.tw/icchang/" target="_blank" rel="noopener">Ing-Chau Chang<sup>3</sup></a>
+<header><nav aria-label="頁面導覽">
+  <a class="brand" href="#top">CA<span>–</span>DFDS</a>
+  <div class="nav-links"><a href="#video">展示</a><a href="#compare">方法比較</a><a href="#method">系統架構</a><a href="#benchmark">實驗結果</a><a href="#gallery">影片</a></div><div class="nav-tools"><button id="motion" aria-pressed="true">暫停動畫</button><button id="language" aria-label="Switch language">EN</button></div>
+</nav></header>
+<main id="top">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">MONOCULAR DEPTH FROM DEFOCUS</p>
+      <h1>CA-DFDS<span>單眼失焦車距估測系統</span></h1>
+      <p>CA-DFDS 從固定光圈與對焦設定下的車身清晰度估測距離。在 CARLA 資料上，逐幀查看輸入、清晰度與估測結果。</p>
+      <div class="actions"><a class="button primary" href="#compare">開啟互動比較</a><a class="button" href="#method">系統架構</a></div>
     </div>
-    <div class="affil"><span><sup>1</sup>National Taiwan University</span><span><sup>2</sup>Rochester Institute of Technology</span><span><sup>3</sup>National Changhua University of Education</span></div>
-    <p class="venue">2026 全國大專院校產學創新實作競賽 · 決賽 D86</p>
-    <div class="btns">
-      <a class="btn" href="#video"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 4.8 12 4.8 12 4.8s-6 0-7.7.5A2.7 2.7 0 0 0 2.4 7.2 28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.7.5 7.7.5s6 0 7.7-.5a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>Video</a>
-      <a class="btn" href="#demo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>Demo</a>
-      <a class="btn" href="assets/poster.pdf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Poster</a>
-      <a class="btn" href="https://github.com/DreamerForJay/CA-DFDS-finals"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7 3.6 3.6 0 0 1 .1-2.7s.8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1a3.6 3.6 0 0 1 .1 2.7 3.9 3.9 0 0 1 1 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg>Code</a>
+    <div class="hero-media" id="video">
+      <video controls playsinline preload="metadata" poster="assets/demo/C-A1_teaser/poster.jpg" src="assets/demo/C-A1_teaser/video.mp4" aria-label="CA-DFDS Teaser"></video>
+      <p>Teaser · CARLA 12 個離散距離影像，依 6.7 → 1.2 m 排序</p>
     </div>
-
-    <div class="teaser showcase" id="video">
-<div class="showcase-heading"><div><span class="eyebrow">SEE CA-DFDS IN ACTION</span><h2>從一張失焦影像，看見車距</h2><p>輸入影像 → 色彩感知清晰度 → 距離估測</p></div><a class="text-link" href="#demo">探索處理流程 ↘</a></div>
-<video id="showcase-video" src="assets/demo/C-A1_teaser/video.mp4" poster="assets/demo/C-A1_teaser/poster.jpg" controls muted playsinline preload="metadata" aria-label="CA-DFDS 展示影片"></video>
-<div class="showcase-caption"><strong id="clip-title">01 / 單張影像到車距</strong><span id="clip-note">CARLA · 12 個離散距離影像 · 6.7 → 1.2 m</span></div>
-<div class="clip-list" aria-label="選擇展示影片">
-<button type="button" data-clip="0" aria-pressed="true"><img src="assets/demo/C-A1_teaser/poster.jpg" alt=""><span><small>01 · OVERVIEW</small><b>輸入到估距</b></span></button>
-<button type="button" data-clip="1" aria-pressed="false"><img src="assets/demo/C-E1_method_compare/poster.jpg" alt=""><span><small>02 · COMPARISON</small><b>四方法同幀比較</b></span></button>
-<button type="button" data-clip="2" aria-pressed="false"><img src="assets/intro_poster.jpg" alt=""><span><small>03 · PRESENTATION</small><b>完整作品介紹</b></span></button>
-</div><p id="media-status" role="status"></p>
-</div>
-    <p class="tldr"><b>TL;DR</b>&nbsp; One photo, one camera: focusing the lens <b>behind</b> the 1–7 m range makes blur change in a single direction, and measuring sharpness in the <b>CIECAM02</b> perceptual color space inside the vehicle mask keeps the estimate stable across vehicle colors.</p>
-  </div>
-</header>
-
-<nav class="section-nav" aria-label="專案導覽"><a href="#video">影片展示</a><a href="#method">核心方法</a><a href="#results">實驗結果</a><a href="#demo">互動探索</a><a href="#limits">限制</a></nav>
-<main class="wrap">
-  <div class="stats">
-    <div class="stat"><div class="v ours">0.16 <small>m</small></div><div class="l">RMSE, white vehicle<br>dual-aperture DFD ≥ 4.92 m</div></div>
-    <div class="stat"><div class="v ours">0.18–0.38 <small>m</small></div><div class="l">RMSE, red / green / blue<br>colors unseen in calibration</div></div>
-    <div class="stat"><div class="v">&lt;0.001 <small>m</small></div><div class="l">RMSE change after<br>vertical image flip</div></div>
-    <div class="stat"><div class="v">10.30 <small>cm</small></div><div class="l">RMSE, 20–110 cm real captures<br>(prior DFDS benchmark)</div></div>
-  </div>
-  <p class="small muted center">CARLA simulation, test distances 1.2–6.7 m. Real-capture result from the prior DFDS study (Chang et al., 2026).</p>
-
-  <section id="abstract">
-    <h2>Abstract</h2>
-    <p class="lead">Monocular depth from defocus (DFD) estimates distance from blur with a single camera, which is low-cost and physically interpretable. In practice it suffers from background mixing, the near/far ambiguity on both sides of the focal plane, and grayscale sharpness that depends on object color. CA-DFDS addresses these with three steps: a segmentation mask restricts the blur measurement to the vehicle; the focal plane is placed <em>behind</em> the measuring range so a single image is unambiguous; and sharpness is computed from the CIECAM02 lightness and chroma channels, whose weights are optimized jointly with the calibration curve.</p>
-    <p class="lead">On the 20–110 cm real-capture benchmark inherited from DFDS, the mean RMSE is 10.30 cm, lower than STMAP, Depth Pro and UniDepthV2. In a 1–7 m CARLA vehicle scenario, red, green and blue vehicles — colors never used for calibration — reach 0.18–0.38 m RMSE, and the result changes by less than 0.001 m when the image is flipped.</p>
   </section>
-
-  <section id="method">
-    <h2>Method</h2>
-    <figure><img class="zoom" src="assets/arch_fix.jpg" alt="CA-DFDS pipeline: (a) f/1.4 image focused at 15 m, (b) vehicle mask, (c) CIECAM02 decomposition, (d) masked Laplacian sharpness, (e) calibration curve to distance, (f) offline calibration" loading="lazy">
-      <figcaption>(a) f/1.4 image focused at 15 m · (b) vehicle mask (SAM 2 / manual) · (c)(d) CIECAM02 perceptual sharpness · (e) calibration curve → distance · (f) one-time offline calibration with white, gray and black vehicles at 13 distances. Click to enlarge.</figcaption></figure>
-    <div class="steps">
-      <div class="step"><span class="k">STEP 1</span><b>Single back-focused shot</b><span class="muted small">f/1.4, focus at 15 m — blur grows monotonically as the car gets closer.</span></div>
-      <div class="step"><span class="k">STEP 2</span><b>Perceptual sharpness σ</b><span class="muted small">Weighted Laplacian of J, a<sub>c</sub>, b<sub>c</sub>; standard deviation inside the mask.</span></div>
-      <div class="step"><span class="k">STEP 3</span><b>Distance from calibration</b><span class="muted small">A quadratic curve maps σ to distance in centimetres.</span></div>
-    </div>
-
-    <h3>Core idea ① — focus behind the range</h3>
-    <div class="core">
-      <span class="eyebrow">Removing the defocus ambiguity</span>
-      <p style="margin-top:8px">If the focal plane sits inside the range, objects in front of and behind it can show the same blur. Moving focus to 15 m makes blur change in one direction across 1–7 m, so one image is enough. Earlier dual-aperture DFD on the same scene had errors above 4.9 m; the back-focused single-shot design brings the white vehicle to 0.16 m.</p>
-      <div class="center"><div class="seg" role="group" aria-label="Focus distance">
-        <button type="button" data-focus="7m" aria-pressed="false">Focus at 7 m</button>
-        <button type="button" data-focus="15m" aria-pressed="true">Focus at 15 m (ours)</button>
-      </div></div>
-      <figure style="margin:0 auto;max-width:640px"><img id="focusImg" class="zoom" src="assets/defocus_15m.jpg" alt="Theoretical blur vs. distance for several apertures, focus at 15 m" loading="lazy">
-        <figcaption id="focusCap">Focus at 15 m: blur decreases monotonically over 1–7 m — no ambiguity. f/1.4 is the most distance-sensitive.</figcaption></figure>
-    </div>
-
-    <h3>Core idea ② — CIECAM02 perceptual sharpness</h3>
-    <div class="core">
-      <span class="eyebrow">Color-aware, not grayscale</span>
-      <p style="margin-top:8px">The masked image is converted to CIECAM02 lightness <i>J</i> and chroma components <i>a<sub>c</sub></i>, <i>b<sub>c</sub></i>. Their Laplacian responses are weighted and the standard deviation inside the mask is the sharpness σ.</p>
-      <div class="eq">E = w<sub>J</sub>∇²J + w<sub>a</sub>∇²a<sub>c</sub> + w<sub>b</sub>∇²b<sub>c</sub>, &nbsp;&nbsp; σ = Std<sub>M</sub>[E]<br>
-        <span class="small muted" style="font-family:Inter,sans-serif">optimized (w<sub>J</sub>, w<sub>a</sub>, w<sub>b</sub>) = (0.8136, 0.1782, 0.0081), calibrated on white, gray and black vehicles</span></div>
-      <div class="eq"><span class="ours">d = −6.562σ² + 128.83σ + 68.39</span> &nbsp;(cm), &nbsp; R² = 0.969</div>
-      <div class="two">
-        <figure style="margin:0"><img class="zoom" src="assets/calib.jpg" alt="Calibration curve of sharpness versus distance" loading="lazy"><figcaption>Calibration: sharpness σ vs. distance.</figcaption></figure>
-        <figure style="margin:0"><img class="zoom" src="assets/cars.jpg" alt="CARLA test vehicles in different colors" loading="lazy"><figcaption>CARLA test vehicles in different colors.</figcaption></figure>
+  <div class="metrics" aria-label="實驗概覽">
+    <div><strong>0.337 m</strong><span>CA-DFDS RMSE · 手繪遮罩</span></div>
+    <div><strong>480 張</strong><span>CARLA 評測影像 · 4 車色</span></div>
+    <div><strong>1.2–6.7 m</strong><span>本頁測試距離</span></div>
+    <div><strong>14.11 FPS</strong><span>RTX 5080 FP32 · 已有遮罩</span></div>
+  </div>
+  <p id="load-status" role="status"></p><p class="note" id="media-language-note">原始素材中的圖內文字與影片字幕保留原文。</p>
+  <section id="compare">
+    <p class="eyebrow">QUALITATIVE COMPARISON</p><h2>四方法距離估測比較</h2>
+    <p>四格共用紅車距離游標。UniDepth V2 與 Depth Pro 顯示線性校正後的距離，並可查看原始輸出。</p>
+    <div class="workbench">
+      <div class="controls">
+        <label class="stretch">資料集距離 <input id="frame" type="range" min="0" max="11" value="6"><output id="frame-value"></output></label>
+        <button id="play">播放</button>
       </div>
+      <div class="legend" id="method-legend"><span class="ours-label">● CA-DFDS (Ours)</span><span style="color:#7bc5ff">● UniDepthV2</span><span style="color:#d3a9ff">● Depth Pro</span><span style="color:#ffce78">● STMAP</span></div><div class="grid four" id="method-cards"></div>
+      <canvas id="compare-chart" role="img" aria-label="各方法估測距離與真值曲線"></canvas>
+      <details class="comparison-details"><summary>四車色比較影片與逐幀誤差（48 張）</summary><video id="comparison-video" controls playsinline preload="metadata" src="assets/demo/C-E1_method_compare/video.mp4" poster="assets/demo/C-E1_method_compare/poster.jpg"></video>
+      <p>逐幀絕對誤差（m）。點擊曲線可跳至對應樣本。</p>
+      <canvas id="video-chart" role="img" aria-label="影片逐幀絕對誤差"></canvas>
+      <div class="table-scroll"><table id="rmse"></table></div></details>
+    </div>
+    <p class="note">四格顯示紅車樣本；深度模型距離經線性校正。影片涵蓋四種車色，共 48 張離散距離樣本。</p>
+  </section>
+  <section id="method">
+    <p class="eyebrow">METHOD</p><h2>系統架構與推論流程</h2>
+    <p>對單張 f/1.4 影像套用車輛遮罩，轉換成 CIECAM02 的 J、a₍c₎、b₍c₎，以遮罩內的加權拉普拉斯響應標準差 σ，經二次校正換算距離。</p>
+    <div class="system-flow"><div data-flow="0"><b>01</b><span>輸入</span><small>f/1.4</small></div><i>→</i><div data-flow="1"><b>02</b><span>車輛遮罩</span><small>Mask</small></div><i>→</i><div data-flow="2"><b>03</b><span>色彩轉換</span><small>J · a꜀ · b꜀</small></div><i>→</i><div data-flow="3"><b>04</b><span>清晰度計算</span><small>σ</small></div><i>→</i><div data-flow="4"><b>05</b><span>距離校正</span><small>d = f(σ)</small></div></div><div class="grid two">
+      <article class="card">
+        <h3>推論流程動畫</h3>
+        <div class="controls"><label>樣本 <select id="step-distance"><option>1.2m</option><option selected>3.7m</option><option>6.7m</option></select></label><label class="stretch">處理步驟 <input id="step" type="range" min="0" max="6" value="0"></label></div>
+        <img id="step-image" alt="推論中間結果">
+        <div id="pipeline" class="pipeline" aria-label="推論流程"></div><p id="step-text"></p><button id="step-play" aria-pressed="true">暫停流程</button><p class="note">既有推論結果動畫重播，非瀏覽器即時推論。</p>
+      </article>
+      <article class="card">
+        <h3>拍攝幾何</h3>
+        <label>檢視 <select id="view"><option value="camera_views.jpg">車載相機／側視與俯視示意</option><option value="camera_setup.jpg">鏡頭與距離設定</option></select></label>
+        <img id="camera-image" src="assets/demo/C-B1_camera_setup/camera_views.jpg" alt="CARLA 拍攝視角">
+        <p>40 mm 鏡頭、36 mm 感光面、對焦 15 m，相機高度 0.8 m。側面與俯視為示意圖。</p>
+      </article>
+    </div>
+    <div class="card optics">
+      <h3>散焦量隨距離變化</h3>
+      <label>物體距離 <input id="optics" type="range" min="1" max="7" step="0.05" value="3.7"><output id="optics-value"></output></label>
+      <canvas id="optics-chart" role="img" aria-label="薄透鏡模型的模糊直徑曲線"></canvas>
+      <p id="optics-readout"></p>
     </div>
   </section>
-
-  <section id="results">
-    <h2>Results</h2>
-    <p class="lead center muted">CARLA, test distances 1.2–6.7 m. Calibration uses only white, gray and black vehicles; red, green and blue are unseen colors.</p>
-    <div class="bars">
-      <div class="center"><div class="seg" role="group" aria-label="Vehicle color" id="colorSeg">
-        <button type="button" data-c="0" aria-pressed="false">Red</button>
-        <button type="button" data-c="1" aria-pressed="true">Green</button>
-        <button type="button" data-c="2" aria-pressed="false">Blue</button>
-        <button type="button" data-c="3" aria-pressed="false">Black†</button>
-      </div></div>
-      <div id="barRows"></div>
-      <p class="small muted center" style="margin:8px 0 0">RMSE (m) of each sharpness measure for the selected vehicle color — shorter is better. † black is a calibration color.</p>
+  <section id="ablation">
+    <p class="eyebrow">VISUAL ABLATION</p><h2>影像條件比較</h2>
+    <div class="grid two">
+      <article class="card">
+        <div class="controls"><label>對照 <select id="pair-kind"><option value="aperture">光圈 f/1.4／f/22</option><option value="rotation">原圖／旋轉 180°</option><option value="color">灰階／CIECAM02 清晰度</option></select></label><label>距離 <select id="pair-distance"><option>1.2m</option><option selected>3.7m</option><option>6.7m</option></select></label></div>
+        <div class="wipe" id="wipe"><img id="pair-right" alt="右側對照影像"><img id="pair-left" alt="左側對照影像"><span id="wipe-line"></span><div class="wipe-labels"><b id="left-label"></b><b id="right-label"></b></div></div>
+        <label class="wipe-control">拖曳分隔線 <input id="split" type="range" min="0" max="100" value="50"></label>
+      </article>
+      <article class="card">
+        <h3>旋轉前後的距離誤差</h3>
+        <p>比較同一張紅車影像旋轉前後的輸出，並以 480 張測試集的 RMSE 檢視整體影響。</p>
+        <div class="table-scroll"><table id="rotation-table"><thead><tr><th>方法</th><th>原圖 → 旋轉 估測 (m)</th><th>原圖 → 旋轉 RMSE (m)</th></tr></thead><tbody></tbody></table></div>
+        <p class="note">深度模型欄採線性校正。此實驗在影像平面旋轉 180°，車輛與相機的空間位置固定。</p>
+      </article>
     </div>
-
-    <h3>Sharpness measures across vehicle colors</h3>
-    <div class="tbl"><table>
-      <thead><tr><th>Sharpness measure</th><th>Red</th><th>Green</th><th>Blue</th><th>Black†</th></tr></thead>
-      <tbody>
-        <tr><td>Grayscale Laplacian (white-calibrated)</td><td>0.27</td><td>1.16</td><td>0.39</td><td>—</td></tr>
-        <tr><td>CIECAM linear (0.6, 0.2, 0.2)</td><td>0.34</td><td>0.51</td><td>1.21</td><td>1.06</td></tr>
-        <tr><td>CIECAM linear (0.8, 0.1, 0.1)</td><td>0.26</td><td>0.42</td><td>0.95</td><td>0.95</td></tr>
-        <tr class="ours"><td>CIECAM optimized weights (ours)</td><td>0.24</td><td>0.18</td><td>0.38</td><td>0.52</td></tr>
-      </tbody>
-    </table></div>
-    <p class="small muted">RMSE in metres. † calibration color.</p>
-
-    <h3>Near range, real captures (20–110 cm)</h3>
-    <div class="tbl"><table>
-      <thead><tr><th>RMSE (cm)</th><th>STMAP</th><th>Depth Pro</th><th>UniDepthV2</th><th class="ours">CA-DFDS (ours)</th></tr></thead>
-      <tbody>
-        <tr><td>Original</td><td>39.47</td><td>184.36</td><td>324.15</td><td class="ours">10.30</td></tr>
-        <tr><td>Rotated</td><td>66.36</td><td>262.42</td><td>375.39</td><td class="ours">10.96</td></tr>
-      </tbody>
-    </table></div>
-    <p class="small muted">Benchmark and baselines from the prior DFDS study (Chang et al., 2026).</p>
   </section>
-
-  <section id="demo" class="demo-section">
-    <div class="section-intro"><span class="eyebrow">EXPLORE THE METHOD</span><h2>同一張影像，逐步拆解</h2><p>選擇近、中、遠樣本，查看每一步如何把車身清晰度轉成距離。</p></div>
-    <div class="process-card">
-      <div class="process-toolbar"><label for="sample-distance">樣本距離</label><select id="sample-distance"><option value="1.2m">近距離 · 1.2 m</option><option value="3.7m" selected>中距離 · 3.7 m</option><option value="6.7m">遠距離 · 6.7 m</option></select><span>CARLA · 紅色車輛</span></div>
-      <div class="process-layout"><div class="process-image"><img id="process-image" src="assets/demo/C-C1_input_output/steps/3.7m/0_input.jpg" alt="3.7 m 原始失焦影像" loading="lazy"></div><div class="process-copy"><span class="eyebrow" id="process-number">STEP 01 / 07</span><h3 id="process-title">原始失焦影像</h3><p id="process-description">固定 f/1.4 光圈，對焦於 15 m；車輛位於對焦平面前方。</p><div class="sample-numbers" id="sample-numbers"></div><a href="demo/#method">開啟完整光學互動 ↗</a></div></div>
-      <div class="process-steps" aria-label="處理步驟"><button type="button" data-process="0" aria-pressed="true"><small>01</small>輸入</button><button type="button" data-process="1" aria-pressed="false"><small>02</small>車輛遮罩</button><button type="button" data-process="2" aria-pressed="false"><small>03</small>明度 J</button><button type="button" data-process="3" aria-pressed="false"><small>04</small>彩度 a꜀</button><button type="button" data-process="4" aria-pressed="false"><small>05</small>彩度 b꜀</button><button type="button" data-process="5" aria-pressed="false"><small>06</small>清晰度</button><button type="button" data-process="6" aria-pressed="false"><small>07</small>估測結果</button></div>
-      <p class="source-note">此展示使用資料集手繪遮罩。數值與影像來自同一批既有推論輸出。</p>
+  <section id="benchmark">
+    <p class="eyebrow">QUANTITATIVE EVALUATION</p><h2>定量結果與誤差分析</h2>
+    <p>CARLA 測試集涵蓋紅、綠、藍、黑，每車色 12 個距離 × 10 張影像。表格預設依整體 RMSE 由低到高排序。</p>
+    <div id="benchmark-bars" class="benchmark-bars"></div><div class="card">
+      <div class="controls"><label>排序 <select id="sort"><option value="rmse_m">整體 RMSE</option><option value="mae_m">整體 MAE</option><option value="rmse_near_1_2_to_3_7_m">近距離 RMSE</option><option value="rmse_far_4_2_to_6_7_m">遠距離 RMSE</option></select></label><a href="assets/demo/C-H1_leaderboard/leaderboard.csv" download>下載 CSV</a></div>
+      <div class="table-scroll"><table id="leaders"></table></div>
+      <p class="note">主表採手繪遮罩。近距離 1.2–3.7 m，遠距離 4.2–6.7 m。近／遠欄是對各距離 RMSE 再取均方根。實拍需另行驗證。</p>
     </div>
-    <div class="explore-grid">
-      <a class="explore-card" href="demo/#compare"><img src="assets/demo/C-E1_method_compare/poster.jpg" alt="四方法比較畫面" loading="lazy"><div><span class="eyebrow">COMPARE</span><h3>誤差隨距離如何變化？ <span>↗</span></h3><p>四方法同幀比較、逐幀誤差曲線，點選曲線跳到對應樣本。</p></div></a>
-      <a class="explore-card" href="demo/#ablation"><img src="assets/demo/C-F1_before_after/poster.jpg" alt="原圖與旋轉影像對照" loading="lazy"><div><span class="eyebrow">INSPECT</span><h3>影像變了，估距會變嗎？ <span>↗</span></h3><p>拖曳檢視光圈、旋轉與清晰度計算的差異。</p></div></a>
+    <div class="grid two analysis">
+      <article class="card"><h3>RMSE 隨距離變化</h3><label>方法 <select id="error-method"></select></label><canvas id="error-chart" role="img" aria-label="所選方法依距離分組的 RMSE"></canvas></article>
+      <article class="card"><h3>依車色檢視</h3><label>分析圖 <select id="analysis-select"><option value="error_by_color.jpg">四車色基準</option><option value="error_19colors.jpg">19 車色分析</option></select></label><a id="analysis-link" target="_blank" rel="noopener"><img id="analysis-image" alt="依車色分組的誤差分析圖"></a></article>
+      <article class="card"><h3>曝光擾動</h3><p>每種乘數使用 240 張影像，顯示 CA-DFDS 的 RMSE。</p><canvas id="exposure-chart" role="img" aria-label="曝光乘數與 RMSE"></canvas><a href="demo/exposure.csv" download>曝光與外插誤差 CSV</a></article>
+      <article class="card"><h3>車色與紋理</h3><p>各點代表一種車色。橫軸為 f/22 影像的平均紋理量。</p><canvas id="texture-chart" role="img" aria-label="紋理量與 RMSE 散點圖"></canvas><a href="demo/texture.csv" download>車色紋理 CSV</a></article>
     </div>
-    <details class="camera-detail"><summary>相機放在哪裡？查看拍攝配置與資料來源</summary><img src="assets/demo/C-B1_camera_setup/camera_views.jpg" alt="CARLA 車載相機、側面與俯視配置示意" loading="lazy"><p>40 mm 鏡頭、f/1.4、對焦 15 m，相機高度 0.8 m。側視與俯視為配置示意，影片為離散距離影像重播。</p><a href="https://github.com/DreamerForJay/CA-DFDS-finals/tree/ecf437c9bc9354010261a41300158071e151f04e/results/demo">素材與數據來源 ↗</a> · <a href="https://drive.google.com/drive/folders/1dhRViJVTi19B6Qj7G2V88P_CmXReAIpD">雲端素材 ↗</a></details>
   </section>
-
-  <section id="apps">
-    <h2>Applications</h2>
-    <div class="apps">
-      <div class="app"><h4>Parking assist</h4><p>While reversing or parking, a rear camera estimates the 1–7 m distance to the vehicle behind and warns the driver when it gets too close.</p></div>
-      <div class="app"><h4>Warehouse AGVs &amp; forklifts</h4><p>A front camera on the vehicle estimates the distance to other vehicles and obstacles, so it can slow down or stop early inside aisles.</p></div>
-      <div class="app"><h4>Low-speed campus shuttles</h4><p>Autonomous shuttles on campuses and industrial parks keep a following distance with a single camera, reducing reliance on LiDAR.</p></div>
-      <div class="app"><h4>Parking lot &amp; yard monitoring</h4><p>Existing CCTV estimates vehicle positions and gaps for space management and feeds the result into a digital-twin platform.</p></div>
-    </div>
-    <p class="small muted" style="margin-top:14px">Deployment: one camera plus 13 known-distance images for calibration. Processing time 74.41 ms per image on an RTX 5080 host (grayscale-sharpness version, mask acquisition excluded).</p>
+  <section id="gallery">
+    <p class="eyebrow">VIDEO GALLERY</p><h2>情境影片</h2>
+    <p>影片將 CARLA 離散影像依距離或車色重排。時間軸呈現資料集順序，沒有連續行駛的時間真值。</p>
+    <div class="grid three" id="videos"></div><details class="full-intro"><summary>完整作品介紹</summary><video controls playsinline preload="none" src="assets/intro.mp4" poster="assets/intro_poster.jpg"></video></details>
   </section>
-
   <section id="limits">
-    <h2>Limitations</h2>
-    <div class="limit">Vehicle-distance results are from CARLA simulation over 1–7 m; the 20–110 cm real-capture results come from the prior DFDS study. Masks currently come from SAM 2 or manual annotation. Validation with a physical camera on real vehicles, longer ranges, timing of the CIECAM02 version on edge devices, and more vehicle types and colors are future work.</div>
+    <p class="eyebrow">LIMITATIONS</p><h2>失敗案例與限制</h2>
+    <div class="grid three" id="failures"></div>
+    <p class="note">逆光與反光尚無對應量測。實體相機實驗列於後續實驗 M6。</p>
+  </section>
+  <section id="speed">
+    <p class="eyebrow">RUNTIME</p><h2>推論速度</h2>
+    <p>RTX 5080 + Intel Core Ultra 7 265K，紅消防車 30 張影像，沿用既有遮罩。下表的 FPS 與延遲中位數各自取自量測來源。</p>
+    <div class="card"><div class="table-scroll"><table id="timing"></table></div><p id="mask-timing"></p></div>
   </section>
 </main>
-
-<footer>© 2026 CA-DFDS team · National Taiwan University · Rochester Institute of Technology · National Changhua University of Education<br>Related project: <a href="https://xn--zwq108c.tw/GEMO3D/">GEMO3D</a></footer>
-
-<div class="lightbox" id="lb" role="dialog" aria-label="Enlarged figure"><img alt=""></div>
-<script>
-(function(){
-  const fImg = document.getElementById('focusImg'), fCap = document.getElementById('focusCap');
-  const FOCUS = { '7m': ['assets/defocus_7m.jpg', 'Focus at 7 m: blur falls to zero at 7 m and rises again behind it — the same blur can mean two distances.'],
-                  '15m': ['assets/defocus_15m.jpg', 'Focus at 15 m: blur decreases monotonically over 1–7 m — no ambiguity. f/1.4 is the most distance-sensitive.'] };
-  document.querySelectorAll('[data-focus]').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('[data-focus]').forEach(x => x.setAttribute('aria-pressed', x === b));
-    const [src, cap] = FOCUS[b.dataset.focus]; fImg.src = src; fCap.textContent = cap;
-    fImg.alt = 'Theoretical blur vs. distance, ' + b.textContent;
-  }));
-
-  const M = [['Grayscale Laplacian (white-calibrated)', [0.27, 1.16, 0.39, null]],
-             ['CIECAM linear (0.6, 0.2, 0.2)', [0.34, 0.51, 1.21, 1.06]],
-             ['CIECAM linear (0.8, 0.1, 0.1)', [0.26, 0.42, 0.95, 0.95]],
-             ['CIECAM optimized weights (ours)', [0.24, 0.18, 0.38, 0.52]]];
-  const rows = document.getElementById('barRows'), MAX = 1.25;
-  rows.innerHTML = M.map((m, i) => '<div class="bar-row' + (i === 3 ? ' ours' : '') + '"><span class="bar-label">' + m[0] + '</span><div class="bar-track"><div class="bar-fill"></div></div><span class="bar-val"></span></div>').join('');
-  function show(c){
-    rows.querySelectorAll('.bar-row').forEach((r, i) => {
-      const v = M[i][1][c];
-      r.querySelector('.bar-fill').style.width = v == null ? '0%' : (v / MAX * 100) + '%';
-      r.querySelector('.bar-val').textContent = v == null ? 'n/a' : v.toFixed(2);
-    });
-  }
-  document.querySelectorAll('#colorSeg button').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('#colorSeg button').forEach(x => x.setAttribute('aria-pressed', x === b)); show(+b.dataset.c);
-  }));
-  show(1);
-
-  const lb = document.getElementById('lb'), li = lb.querySelector('img');
-  document.querySelectorAll('img.zoom').forEach(im => im.addEventListener('click', () => { li.src = im.src; li.alt = im.alt; lb.classList.add('on'); }));
-  lb.addEventListener('click', () => lb.classList.remove('on'));
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
-
-  const btn = document.getElementById('themeBtn'), root = document.documentElement;
-  try { const t = localStorage.getItem('cadfds-theme'); if (t) root.dataset.theme = t; } catch (e) {}
-  btn.addEventListener('click', () => {
-    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    root.dataset.theme = dark ? 'light' : 'dark';
-    try { localStorage.setItem('cadfds-theme', root.dataset.theme); } catch (e) {}
-  });
-})();
-</script>
-</body>
-</html>
+<footer><div><strong>CA-DFDS</strong><span>2026 產學創新實作競賽 · D86</span><p>Yu-Sen Wang · Chunghui Kuo · Chieh-Lun Yang · Ing-Chau Chang<br>National Taiwan University · Rochester Institute of Technology · National Changhua University of Education</p></div><div><a href="https://github.com/DreamerForJay/CA-DFDS-finals">GitHub ↗</a><a href="https://drive.google.com/drive/folders/1dhRViJVTi19B6Qj7G2V88P_CmXReAIpD">素材來源 ↗</a><a href="assets/poster.pdf">海報 ↗</a><a href="#top">回頁首 ↑</a></div></footer></body></html>
