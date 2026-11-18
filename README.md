@@ -16,6 +16,7 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 | `docs/assets/intro.mp4` | 配音介紹影片（v6） |
 | `docs/assets/demo.mp4` | 系統展示：測試距離 6.7 m → 1.2 m |
 | `docs/assets/poster.pdf` | A1 海報（v20） |
+| `docs/assets/demo/` | Demo 素材（影片、步驟圖、比較數據、`manifest.json`），由 CA-DFDS-finals `scripts/export_web_assets.py` 產生 |
 
 ## 更新影片連結
 

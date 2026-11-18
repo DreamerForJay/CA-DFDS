@@ -1,0 +1,291 @@
+{
+  "generated_by": "CA-DFDS-finals/scripts/export_web_assets.py",
+  "source": "CA-DFDS-finals/results/demo (see each README.md there)",
+  "note": "All numbers come from CA-DFDS-finals results/ (CARLA simulation, 1.2–6.7 m test set). Do not edit by hand; re-export.",
+  "assets": [
+    {
+      "code": "C-A1",
+      "folder": "assets/demo/C-A1_teaser",
+      "title": "Teaser：單張失焦影像 → 車距",
+      "caption": "紅色消防車由 6.7 m 接近到 1.2 m（資料集 12 個距離，非連續拍攝）。左：輸入＋遮罩；中：CIECAM02 清晰度熱圖；右：估測 vs 真實距離。",
+      "files": [
+        "video.mp4",
+        "poster.jpg",
+        "per_frame.csv",
+        "summary.json"
+      ],
+      "numbers": {
+        "sequence_rmse_m": 0.2947,
+        "test480_rmse_m": 0.3372
+      }
+    },
+    {
+      "code": "C-B1",
+      "folder": "assets/demo/C-B1_camera_setup",
+      "title": "拍攝配置",
+      "caption": "40 mm、f/1.4＋f/22、對焦 15 m、相機高 0.8 m；距離 = 相機到前車車尾（CARLA get_dataset2.py 參數）。",
+      "files": [
+        "poster.jpg",
+        "summary.json",
+        "camera_setup.jpg",
+        "camera_views.jpg"
+      ],
+      "numbers": {}
+    },
+    {
+      "code": "C-C1",
+      "folder": "assets/demo/C-C1_input_output",
+      "title": "輸入 → 輸出（逐步）",
+      "caption": "同一張影像：輸入 → 遮罩 → J／a_c／b_c → 加權拉普拉斯清晰度 → σ → 校正曲線 → 距離。近／中／遠三個距離，每步一張圖，可做步驟滑桿。",
+      "files": [
+        "video.mp4",
+        "poster.jpg",
+        "steps.json",
+        "per_frame.csv",
+        "summary.json",
+        "steps/1.2m/0_input.jpg",
+        "steps/1.2m/1_mask.jpg",
+        "steps/1.2m/2_J.jpg",
+        "steps/1.2m/3_ac.jpg",
+        "steps/1.2m/4_bc.jpg",
+        "steps/1.2m/5_sharpness.jpg",
+        "steps/1.2m/6_result.jpg",
+        "steps/1.2m/strip.jpg",
+        "steps/3.7m/0_input.jpg",
+        "steps/3.7m/1_mask.jpg",
+        "steps/3.7m/2_J.jpg",
+        "steps/3.7m/3_ac.jpg",
+        "steps/3.7m/4_bc.jpg",
+        "steps/3.7m/5_sharpness.jpg",
+        "steps/3.7m/6_result.jpg",
+        "steps/3.7m/strip.jpg",
+        "steps/6.7m/0_input.jpg",
+        "steps/6.7m/1_mask.jpg",
+        "steps/6.7m/2_J.jpg",
+        "steps/6.7m/3_ac.jpg",
+        "steps/6.7m/4_bc.jpg",
+        "steps/6.7m/5_sharpness.jpg",
+        "steps/6.7m/6_result.jpg",
+        "steps/6.7m/strip.jpg"
+      ],
+      "numbers": {}
+    },
+    {
+      "code": "C-D1",
+      "folder": "assets/demo/C-D1_defocus_theory",
+      "title": "為什麼對焦在 15 m",
+      "caption": "薄透鏡模糊圈 vs 距離：後對焦（15 m）在 1–7 m 單調、無歧義；f/22 幾乎不模糊。",
+      "files": [
+        "video.mp4",
+        "poster.jpg",
+        "curves.csv",
+        "per_frame.csv",
+        "summary.json",
+        "defocus_curves.jpg",
+        "aperture_pairs/red_1.2m_f1.4.jpg",
+        "aperture_pairs/red_1.2m_f22.jpg",
+        "aperture_pairs/red_3.7m_f1.4.jpg",
+        "aperture_pairs/red_3.7m_f22.jpg",
+        "aperture_pairs/red_6.7m_f1.4.jpg",
+        "aperture_pairs/red_6.7m_f22.jpg"
+      ],
+      "numbers": {}
+    },
+    {
+      "code": "C-E1",
+      "folder": "assets/demo/C-E1_method_compare",
+      "title": "四方法同步比較",
+      "caption": "同一張影像、同一幀：Depth Pro（2024）、UniDepthV2（2025）、STMAP（1994）、CA-DFDS。深度模型已用同一校正集線性校正；STMAP 需兩張不同光圈影像。",
+      "files": [
+        "video.mp4",
+        "poster.jpg",
+        "per_frame.csv",
+        "summary.json",
+        "keyframes/end_card.jpg",
+        "panels/1.2m_cadfds.jpg",
+        "panels/1.2m_depthpro.jpg",
+        "panels/1.2m_stmap.jpg",
+        "panels/1.2m_unidepth.jpg",
+        "panels/1.7m_cadfds.jpg",
+        "panels/1.7m_depthpro.jpg",
+        "panels/1.7m_stmap.jpg",
+        "panels/1.7m_unidepth.jpg",
+        "panels/2.2m_cadfds.jpg",
+        "panels/2.2m_depthpro.jpg",
+        "panels/2.2m_stmap.jpg",
+        "panels/2.2m_unidepth.jpg",
+        "panels/2.7m_cadfds.jpg",
+        "panels/2.7m_depthpro.jpg",
+        "panels/2.7m_stmap.jpg",
+        "panels/2.7m_unidepth.jpg",
+        "panels/3.2m_cadfds.jpg",
+        "panels/3.2m_depthpro.jpg",
+        "panels/3.2m_stmap.jpg",
+        "panels/3.2m_unidepth.jpg",
+        "panels/3.7m_cadfds.jpg",
+        "panels/3.7m_depthpro.jpg",
+        "panels/3.7m_stmap.jpg",
+        "panels/3.7m_unidepth.jpg",
+        "panels/4.2m_cadfds.jpg",
+        "panels/4.2m_depthpro.jpg",
+        "panels/4.2m_stmap.jpg",
+        "panels/4.2m_unidepth.jpg",
+        "panels/4.7m_cadfds.jpg",
+        "panels/4.7m_depthpro.jpg",
+        "panels/4.7m_stmap.jpg",
+        "panels/4.7m_unidepth.jpg",
+        "panels/5.2m_cadfds.jpg",
+        "panels/5.2m_depthpro.jpg",
+        "panels/5.2m_stmap.jpg",
+        "panels/5.2m_unidepth.jpg",
+        "panels/5.7m_cadfds.jpg",
+        "panels/5.7m_depthpro.jpg",
+        "panels/5.7m_stmap.jpg",
+        "panels/5.7m_unidepth.jpg",
+        "panels/6.2m_cadfds.jpg",
+        "panels/6.2m_depthpro.jpg",
+        "panels/6.2m_stmap.jpg",
+        "panels/6.2m_unidepth.jpg",
+        "panels/6.7m_cadfds.jpg",
+        "panels/6.7m_depthpro.jpg",
+        "panels/6.7m_stmap.jpg",
+        "panels/6.7m_unidepth.jpg"
+      ],
+      "numbers": {
+        "test480_rmse_m": {
+          "opt": 0.3372,
+          "unidepth_lin": 0.357,
+          "unidepth": 1.8795,
+          "stmap": 0.4784,
+          "depthpro_lin": 0.7506,
+          "depthpro": 0.8708
+        }
+      }
+    },
+    {
+      "code": "C-F1",
+      "folder": "assets/demo/C-F1_before_after",
+      "title": "前後對照：旋轉 180°、灰階 vs CIECAM02",
+      "caption": "旋轉 180° 後 CA-DFDS 結果不變；深度模型與 STMAP 變差。另附灰階與 CIECAM02 清晰度熱圖成對圖（可做拖曳對照）。",
+      "files": [
+        "video.mp4",
+        "poster.jpg",
+        "rotation_summary.json",
+        "per_frame.csv",
+        "summary.json",
+        "rotation_pairs/red_1.2m_orig.jpg",
+        "rotation_pairs/red_1.2m_rot180.jpg",
+        "rotation_pairs/red_1.7m_orig.jpg",
+        "rotation_pairs/red_1.7m_rot180.jpg",
+        "rotation_pairs/red_2.2m_orig.jpg",
+        "rotation_pairs/red_2.2m_rot180.jpg",
+        "rotation_pairs/red_2.7m_orig.jpg",
+        "rotation_pairs/red_2.7m_rot180.jpg",
+        "rotation_pairs/red_3.2m_orig.jpg",
+        "rotation_pairs/red_3.2m_rot180.jpg",
+        "rotation_pairs/red_3.7m_orig.jpg",
+        "rotation_pairs/red_3.7m_rot180.jpg",
+        "rotation_pairs/red_4.2m_orig.jpg",
+        "rotation_pairs/red_4.2m_rot180.jpg",
+        "rotation_pairs/red_4.7m_orig.jpg",
+        "rotation_pairs/red_4.7m_rot180.jpg",
+        "rotation_pairs/red_5.2m_orig.jpg",
+        "rotation_pairs/red_5.2m_rot180.jpg",
+        "rotation_pairs/red_5.7m_orig.jpg",
+        "rotation_pairs/red_5.7m_rot180.jpg",
+        "rotation_pairs/red_6.2m_orig.jpg",
+        "rotation_pairs/red_6.2m_rot180.jpg",
+        "rotation_pairs/red_6.7m_orig.jpg",
+        "rotation_pairs/red_6.7m_rot180.jpg",
+        "gray_vs_ciecam/black_1.2m_ciecam.jpg",
+        "gray_vs_ciecam/black_1.2m_gray.jpg",
+        "gray_vs_ciecam/black_3.7m_ciecam.jpg",
+        "gray_vs_ciecam/black_3.7m_gray.jpg",
+        "gray_vs_ciecam/black_6.7m_ciecam.jpg",
+        "gray_vs_ciecam/black_6.7m_gray.jpg",
+        "gray_vs_ciecam/red_1.2m_ciecam.jpg",
+        "gray_vs_ciecam/red_1.2m_gray.jpg",
+        "gray_vs_ciecam/red_3.7m_ciecam.jpg",
+        "gray_vs_ciecam/red_3.7m_gray.jpg",
+        "gray_vs_ciecam/red_6.7m_ciecam.jpg",
+        "gray_vs_ciecam/red_6.7m_gray.jpg",
+        "keyframes/rotation_rmse.jpg"
+      ],
+      "numbers": {
+        "rotation_rmse_m": {
+          "cadfds": [
+            0.3372,
+            0.3372
+          ],
+          "stmap": [
+            0.4784,
+            0.7847
+          ],
+          "unidepth": [
+            0.357,
+            3.0125
+          ],
+          "depthpro": [
+            0.7506,
+            1.5238
+          ]
+        }
+      }
+    },
+    {
+      "code": "C-H1",
+      "folder": "assets/demo/C-H1_leaderboard",
+      "title": "排行榜（CARLA 480 張）",
+      "caption": "各方法 RMSE、近／遠距離、自動遮罩、旋轉 180°、時間；方法附年份與出處。",
+      "files": [
+        "leaderboard.json",
+        "leaderboard.csv",
+        "leaderboard.md"
+      ],
+      "numbers": {}
+    },
+    {
+      "code": "C-I1",
+      "folder": "assets/demo/C-I1_analysis",
+      "title": "分析圖表",
+      "caption": "誤差 vs 距離、各車色、22 個車色資料夾；charts.json 為原始數據，可做互動圖。",
+      "files": [
+        "charts.json",
+        "error_19colors.jpg",
+        "error_by_color.jpg",
+        "error_vs_distance.jpg"
+      ],
+      "numbers": {}
+    },
+    {
+      "code": "C-K1",
+      "folder": "assets/demo/C-K1_failure_cases",
+      "title": "失敗案例",
+      "caption": "每張圖一句原因（captions.json）。",
+      "files": [
+        "captions.json",
+        "worst_beyond_7.2m.jpg",
+        "worst_exposure_x0.5.jpg",
+        "worst_exposure_x0.7.jpg",
+        "worst_exposure_x1.4.jpg",
+        "worst_exposure_x2.0.jpg",
+        "worst_flipped.jpg",
+        "worst_suv_runA.jpg",
+        "worst_suv_runB.jpg",
+        "mask_error_box_iou0.33.jpg"
+      ],
+      "numbers": {}
+    },
+    {
+      "code": "C-M1",
+      "folder": "assets/demo/C-M1_timing",
+      "title": "即時性",
+      "caption": "CA-DFDS 每張處理時間：CPU 與 GPU 版 CIECAM02（RMSE 相同）。",
+      "files": [
+        "timing.json",
+        "timing.jpg"
+      ],
+      "numbers": {}
+    }
+  ]
+}
