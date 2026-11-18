@@ -12,7 +12,7 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 
 `docs/index.html` 為唯一主頁與 Demo；舊 `/demo/` 保留語言與章節轉址。
 
-順序：作品／作者／校徽 → 研究動機 → 系統流程 → 方法比較 → 影像條件 → 定量結果 → 影片 → 速度。主要內容直接顯示，完整介紹影片可展開。
+順序：作品／作者／校徽 → 研究動機 → 系統流程 → 方法比較 → 影像條件 → 定量結果 → 情境影片 → 系統介面 → 結論。主要內容直接顯示，完整介紹影片可展開。
 
 - `assets/unified-demo.js`：既有資料、比較圖表與正式四方法表。
 - `assets/experience.js`：可見區域自動重播、點比較區暫停／繼續、全域暫停。
@@ -50,3 +50,12 @@ Color-Aware Depth from Defocus with Segmentation for Monocular Vehicle Distance 
 - 推論圖支援點擊／鍵盤暫停；移除獨立限制區與素材來源導覽。
 - 數據及評測條件保持不變，海報與簡報未修改。
 - 驗證 320、390、768、1024、1440 px × 中英文 × 明暗主題，無頁面橫向溢出。
+
+### QR 手機展示與五步架構
+
+- `mobile-demo.css/js`：手機字級、五步架構／公式、圖片放大與光學曲線循環。
+- 推論結果直接以真實輸入影像、資料集目標框、估測值／真值／誤差呈現。
+- 誤差曲線支援滑鼠與觸控取樣，離開後恢復原播放狀態。
+- 系統介面截圖取自 finals 的 `results/gui_new_v3_2_auto.png`；本機入口需要先啟動 `run_gui_new.bat`，桌面 GUI 使用 `--desktop`。公開網站仍為既有資料重播。
+- 移除詳細速度表與重複操作錄影，最後呈現結論。
+- 已測試手機觸控模擬、20 組語言／主題／視窗寬度、影片循環、步驟回到起點與曲線取樣。

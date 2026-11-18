@@ -4,8 +4,8 @@ let stepEnabled = true;
 const inView = el => {const r=el.getBoundingClientRect();return r.top<innerHeight*.95&&r.bottom>110;};
 const tr = s => window.t ? window.t(s) : s;
 const startExperience=()=>{
-  const stageNames=['輸入','遮罩','明度 J','彩度 a','彩度 b','清晰度','距離'];
-  get('pipeline').replaceChildren(...stageNames.map((name,index)=>{const b=stamp('button',name);b.dataset.stage=index;b.type='button';b.addEventListener('click',()=>{stepEnabled=false;get('step').value=index;updateSteps();updateButtons();});return b;}));
+  const stageNames=['輸入','遮罩','色彩','清晰度','距離'];
+  get('pipeline').replaceChildren(...stageNames.map((name,stepNumber)=>{const index=[0,1,2,5,6][stepNumber];const b=stamp('button','');b.append(stamp('small','STEP '+(stepNumber+1)),stamp('span',name));b.dataset.stage=index;b.type='button';b.addEventListener('click',()=>{stepEnabled=true;get('step').value=index;updateSteps();updateButtons();});return b;}));
   updateSteps();
   const scoreKeys={cadfds:'opt',unidepth:'unidepth_lin',depthpro:'depthpro_lin',stmap:'stmap'};
   const max=Math.max(...methods.map(([key])=>data.comparison.test480_rmse_m[scoreKeys[key]]));
@@ -20,7 +20,7 @@ const startExperience=()=>{
     get('comparison-stage').setAttribute('aria-pressed',String(motionEnabled&&comparisonAuto));
   }
   function syncMedia(){
-    document.querySelectorAll('video[data-auto]').forEach(v=>{const should=(motionEnabled||v.dataset.manualPlaying)&&!document.hidden&&inView(v)&&!v.dataset.userPaused;if(should){if(v.paused)v.play().catch(()=>{});}else if(!v.paused){v.dataset.programPause='1';v.pause();setTimeout(()=>delete v.dataset.programPause,100);}});
+    document.querySelectorAll('video[data-auto]').forEach(v=>{const should=(motionEnabled||v.dataset.manualPlaying)&&!document.hidden&&inView(v)&&!v.dataset.userPaused&&!v.dataset.scrubbing;if(should){if(v.paused)v.play().catch(()=>{});}else if(!v.paused){v.dataset.programPause='1';v.pause();setTimeout(()=>delete v.dataset.programPause,100);}});
     // Watch the comparison display itself, not a card row below the original input image.
     const shouldCompare=motionEnabled&&!document.hidden&&inView(get('comparison-stage'))&&comparisonAuto;
     if(shouldCompare&&!playback)togglePlayback();else if(!shouldCompare&&playback)togglePlayback();

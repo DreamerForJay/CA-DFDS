@@ -160,9 +160,15 @@ function updateSteps() {
     "J 明度 · 平均 "+row.J_mean, "a₍c₎ 色彩分量 · 平均 "+row.ac_mean,
     "b₍c₎ 色彩分量 · 平均 "+row.bc_mean, "加權拉普拉斯標準差 σ = "+row.sigma,
     "距離 "+format(row.pred_m)+" m · GT "+row.gt_m+" m · 誤差 "+signed(row.err_m)+" m"];
-  document.querySelectorAll("[data-stage]").forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.stage)===index)));
-  get("step-text").textContent = (index+1) + " / 7 · " + text[index];
-  get("step-image").src = root + "C-C1_input_output/steps/" + distance + "/" + steps[index] + ".jpg";
+  document.querySelectorAll("[data-stage]").forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.stage)===[0,1,2,2,2,5,6][index])));
+  get("step-text").textContent = "Step " + [1,2,3,3,3,4,5][index] + " · " + text[index];
+  get("step-image").src = index===6 ? root+"scenario_replays/red_"+distance+".jpg" : root + "C-C1_input_output/steps/" + distance + "/" + steps[index] + ".jpg";
+  ['step-box','step-tag','step-result'].forEach(id=>get(id).hidden=index!==6);
+  const box=data.boxes['red_'+distance.replace('m','')];
+  Object.assign(get('step-box').style,{left:box[0]*100+'%',top:box[1]*100+'%',width:(box[2]-box[0])*100+'%',height:(box[3]-box[1])*100+'%'});
+  get('step-tag').textContent='CA-DFDS '+format(row.pred_m)+' m';
+  get('step-pred').textContent=format(row.pred_m)+' m';get('step-gt').textContent=format(row.gt_m)+' m';get('step-error').textContent=signed(row.err_m)+' m';
+  document.querySelectorAll('[data-method-node]').forEach(n=>n.classList.toggle('active',Number(n.dataset.methodNode)===[0,1,2,2,2,3,4][index]));
 }
 function updateOptics() {
   const selected = Number(get("optics").value);
@@ -228,17 +234,14 @@ function gallery() {
     ["車輛接近","scenario_replays/approach.mp4","scenario_replays/red_6.7m.jpg","scenario_replays/approach.csv"],
     ["前車往返","scenario_replays/roundtrip.mp4","scenario_replays/red_3.7m.jpg","scenario_replays/roundtrip.csv"],
     ["四車色切換","scenario_replays/colors.mp4","scenario_replays/blue_3.7m.jpg","scenario_replays/colors.csv"],
-    ["輸入到輸出","C-C1_input_output/video.mp4","C-C1_input_output/poster.jpg","C-C1_input_output/per_frame.csv"],
-    ["原圖與旋轉 180°","C-F1_before_after/video.mp4","C-F1_before_after/poster.jpg","C-F1_before_after/per_frame.csv"],
-    ["網頁操作與 CUDA 測距","scenario_replays/walkthrough.mp4","scenario_replays/walkthrough.jpg"]
+
   ];
   for (const [title, path, poster, csv] of videos) {
     const figure = stamp("figure","");
     figure.className = "card media-card";
     const video = Object.assign(document.createElement("video"),{src:root+path,poster:root+poster,preload:"none",controls:true,playsInline:true});
     video.setAttribute("aria-label",title);
-    const caption = stamp("figcaption",title+(csv ? " · " : ""));
-    if (csv) caption.append(Object.assign(stamp("a","逐幀 CSV"),{href:root+csv,download:""}));
+    const caption = stamp("figcaption",title);
     figure.append(video,caption);
     get("videos").append(figure);
   }
@@ -282,14 +285,22 @@ function setupVideoComparison() {
     video.pause();
     video.currentTime = targetTime;
   });
-  canvas.addEventListener("click", event => {
-    const fraction = (event.offsetX - 51) / (canvas.clientWidth - 66);
-    const index = Math.max(0, Math.min(starts.length - 1, Math.round(fraction * (starts.length - 1))));
-    if (video.readyState) {
-      video.pause();
-      video.currentTime = starts[index] + 0.001;
-    }
-  });
+  let hoverWasPlaying=false,hovering=false;
+  function seekPointer(event){
+    if(event.pointerType==='touch'&&event.type==='pointermove'&&!event.buttons)return;
+    const fraction=(event.clientX-canvas.getBoundingClientRect().left-51)/(canvas.clientWidth-66);
+    const index=Math.max(0,Math.min(starts.length-1,Math.round(fraction*(starts.length-1))));
+    if(!video.readyState)return;
+    if(!hovering){hoverWasPlaying=!video.paused;hovering=true;}
+    video.dataset.scrubbing='1';video.dataset.programPause='1';video.pause();
+    video.currentTime=starts[index]+.001;slider.value=index+1;
+    get('video-frame-value').value=(index+1)+' / '+starts.length;
+    plot(canvas,series,index+1,'絕對誤差 (m)',false,'樣本序號');
+    const frame=data.frames[index];get('video-hover').textContent='GT '+frame.gt_m+' m · CA-DFDS '+format(frame.cadfds_m)+' m · '+(window.t?window.t('誤差'):'誤差')+' '+signed(frame.cadfds_err_m)+' m';
+  }
+  canvas.addEventListener('pointermove',seekPointer);canvas.addEventListener('pointerdown',seekPointer);
+  function endScrub(){hovering=false;delete video.dataset.scrubbing;delete video.dataset.programPause;if(hoverWasPlaying&&motionEnabled)video.play().catch(()=>{});}
+  canvas.addEventListener('pointerleave',endScrub);canvas.addEventListener('pointerup',e=>{if(e.pointerType==='touch')endScrub();});
   video.addEventListener("timeupdate", sync);
   video.addEventListener("seeked", sync);
   sync();
@@ -315,9 +326,6 @@ async function initialize() {
   const texture = data.texture.map(row => [Number(row.texture_f22_mean),Number(row.cadfds_rmse_m)]);
   plot(get("exposure-chart"),[{color:"#ffce78",points:exposure}],null,"RMSE (m)",false,"曝光乘數");
   plot(get("texture-chart"),[{color:"#7bc5ff",points:texture}],null,"RMSE (m)",false,"紋理量",true);
-  table(get("timing"),["管線","延遲中位數 (ms)","FPS","RMSE (m)"],Object.entries(data.timing.pipelines).map(([key,item]) =>
-    [key,format(item.total_median_ms,2),format(item.fps,2),format(item.rmse_m,4)]));
-  get("mask-timing").textContent = "YOLO + SAM 自動遮罩含 I/O 耗時 " + data.timing.auto_mask.wall_incl_io + " ms。此為獨立遮罩計時。";
   const handlers = {color:updateComparison,frame:updateComparison,step:updateSteps,"step-distance":updateSteps,
     optics:updateOptics,"pair-kind":updatePair,"pair-distance":updatePair,split:updateSplit,sort:updateLeaderboard,
     "error-method":updateError,"analysis-select":updateAnalysis,
