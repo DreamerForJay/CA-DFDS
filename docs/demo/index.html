@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CA-DFDS 單眼散焦測距的 CARLA 互動展示與實驗比較">
+  <title>CA-DFDS — 單眼散焦測距</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./demo.js" defer></script>
+</head>
+<body>
+<header><nav aria-label="頁面導覽">
+  <a class="brand" href="#top">CA<span>–</span>DFDS</a>
+  <div><a href="#compare">方法比較</a><a href="#method">推論流程</a><a href="#benchmark">評測</a><a href="#gallery">情境</a></div>
+</nav></header>
+<main id="top">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">MONOCULAR DEPTH FROM DEFOCUS</p>
+      <h1>用單眼散焦<br>估測車輛距離</h1>
+      <p>CA-DFDS 從固定光圈與對焦設定下的車身清晰度估測距離。在 CARLA 資料上，逐幀查看輸入、清晰度與估測結果。</p>
+      <div class="actions"><a class="button primary" href="#compare">開啟互動比較</a><a class="button" href="../">專案頁</a></div>
+    </div>
+    <div class="hero-media">
+      <video controls playsinline preload="metadata" poster="../assets/demo/C-A1_teaser/poster.jpg" src="../assets/demo/C-A1_teaser/video.mp4" aria-label="CA-DFDS Teaser"></video>
+      <p>Teaser · CARLA 12 個離散距離影像，依 6.7 → 1.2 m 排序</p>
+    </div>
+  </section>
+  <div class="metrics" aria-label="實驗概覽">
+    <div><strong>0.337 m</strong><span>CA-DFDS RMSE · 手繪遮罩</span></div>
+    <div><strong>480 張</strong><span>CARLA 評測影像 · 4 車色</span></div>
+    <div><strong>1.2–6.7 m</strong><span>本頁測試距離</span></div>
+    <div><strong>14.11 FPS</strong><span>RTX 5080 FP32 · 已有遮罩</span></div>
+  </div>
+  <p id="load-status" role="status"></p>
+  <section id="compare">
+    <p class="eyebrow">QUALITATIVE COMPARISON</p><h2>同一幀，四種方法</h2>
+    <p>四格共用紅車距離游標。UniDepth V2 與 Depth Pro 顯示線性校正後的距離，並可查看原始輸出。</p>
+    <div class="workbench">
+      <div class="controls">
+        <label class="stretch">資料集距離 <input id="frame" type="range" min="0" max="11" value="6"><output id="frame-value"></output></label>
+        <button id="play">播放</button>
+      </div>
+      <div class="grid four" id="method-cards"></div>
+      <canvas id="compare-chart" role="img" aria-label="各方法估測距離與真值曲線"></canvas>
+      <video id="comparison-video" controls playsinline preload="metadata" src="../assets/demo/C-E1_method_compare/video.mp4" poster="../assets/demo/C-E1_method_compare/poster.jpg"></video>
+      <p>逐幀絕對誤差（m）。點擊曲線可跳至對應樣本。</p>
+      <canvas id="video-chart" role="img" aria-label="影片逐幀絕對誤差"></canvas>
+      <div class="table-scroll"><table id="rmse"></table></div>
+    </div>
+    <p class="note">四格顯示紅車的原始輸出。影片涵蓋四種車色，共 48 張離散距離樣本。</p>
+  </section>
+  <section id="method">
+    <p class="eyebrow">METHOD</p><h2>從像素到公尺</h2>
+    <p>對單張 f/1.4 影像套用車輛遮罩，轉換成 CIECAM02 的 J、a₍c₎、b₍c₎，以遮罩內的加權拉普拉斯響應標準差 σ，經二次校正換算距離。</p>
+    <div class="grid two">
+      <article class="card">
+        <h3>逐步檢視</h3>
+        <div class="controls"><label>樣本 <select id="step-distance"><option>1.2m</option><option selected>3.7m</option><option>6.7m</option></select></label><label class="stretch">處理步驟 <input id="step" type="range" min="0" max="6" value="0"></label></div>
+        <img id="step-image" alt="推論中間結果">
+        <p id="step-text" aria-live="polite"></p>
+      </article>
+      <article class="card">
+        <h3>拍攝幾何</h3>
+        <label>檢視 <select id="view"><option value="camera_views.jpg">車載相機／側視與俯視示意</option><option value="camera_setup.jpg">鏡頭與距離設定</option></select></label>
+        <img id="camera-image" src="../assets/demo/C-B1_camera_setup/camera_views.jpg" alt="CARLA 拍攝視角">
+        <p>40 mm 鏡頭、36 mm 感光面、對焦 15 m，相機高度 0.8 m。側面與俯視為示意圖。</p>
+      </article>
+    </div>
+    <div class="card optics">
+      <h3>散焦量隨距離變化</h3>
+      <label>物體距離 <input id="optics" type="range" min="1" max="7" step="0.05" value="3.7"><output id="optics-value"></output></label>
+      <canvas id="optics-chart" role="img" aria-label="薄透鏡模型的模糊直徑曲線"></canvas>
+      <p id="optics-readout"></p>
+    </div>
+  </section>
+  <section id="ablation">
+    <p class="eyebrow">VISUAL ABLATION</p><h2>拖曳檢視前後差異</h2>
+    <div class="grid two">
+      <article class="card">
+        <div class="controls"><label>對照 <select id="pair-kind"><option value="aperture">光圈 f/1.4／f/22</option><option value="rotation">原圖／旋轉 180°</option><option value="color">灰階／CIECAM02 清晰度</option></select></label><label>距離 <select id="pair-distance"><option>1.2m</option><option selected>3.7m</option><option>6.7m</option></select></label></div>
+        <div class="wipe" id="wipe"><img id="pair-right" alt="右側對照影像"><img id="pair-left" alt="左側對照影像"><span id="wipe-line"></span><div class="wipe-labels"><b id="left-label"></b><b id="right-label"></b></div></div>
+        <label class="wipe-control">拖曳分隔線 <input id="split" type="range" min="0" max="100" value="50"></label>
+      </article>
+      <article class="card">
+        <h3>旋轉前後的距離誤差</h3>
+        <p>比較同一張紅車影像旋轉前後的輸出，並以 480 張測試集的 RMSE 檢視整體影響。</p>
+        <div class="table-scroll"><table id="rotation-table"><thead><tr><th>方法</th><th>原圖 → 旋轉 估測 (m)</th><th>原圖 → 旋轉 RMSE (m)</th></tr></thead><tbody></tbody></table></div>
+        <p class="note">深度模型欄採線性校正。此實驗在影像平面旋轉 180°，車輛與相機的空間位置固定。</p>
+      </article>
+    </div>
+  </section>
+  <section id="benchmark">
+    <p class="eyebrow">QUANTITATIVE EVALUATION</p><h2>排行榜與誤差分析</h2>
+    <p>CARLA 測試集涵蓋紅、綠、藍、黑，每車色 12 個距離 × 10 張影像。表格預設依整體 RMSE 由低到高排序。</p>
+    <div class="card">
+      <div class="controls"><label>排序 <select id="sort"><option value="rmse_m">整體 RMSE</option><option value="mae_m">整體 MAE</option><option value="rmse_near_1_2_to_3_7_m">近距離 RMSE</option><option value="rmse_far_4_2_to_6_7_m">遠距離 RMSE</option></select></label><a href="../assets/demo/C-H1_leaderboard/leaderboard.csv" download>下載 CSV</a></div>
+      <div class="table-scroll"><table id="leaders"></table></div>
+      <p class="note">主表採手繪遮罩。近距離 1.2–3.7 m，遠距離 4.2–6.7 m。近／遠欄是對各距離 RMSE 再取均方根。實拍需另行驗證。</p>
+    </div>
+    <div class="grid two analysis">
+      <article class="card"><h3>RMSE 隨距離變化</h3><label>方法 <select id="error-method"></select></label><canvas id="error-chart" role="img" aria-label="所選方法依距離分組的 RMSE"></canvas></article>
+      <article class="card"><h3>依車色檢視</h3><label>分析圖 <select id="analysis-select"><option value="error_by_color.jpg">四車色基準</option><option value="error_19colors.jpg">19 車色分析</option></select></label><a id="analysis-link" target="_blank" rel="noopener"><img id="analysis-image" alt="依車色分組的誤差分析圖"></a></article>
+      <article class="card"><h3>曝光擾動</h3><p>每種乘數使用 240 張影像，顯示 CA-DFDS 的 RMSE。</p><canvas id="exposure-chart" role="img" aria-label="曝光乘數與 RMSE"></canvas><a href="exposure.csv" download>曝光與外插誤差 CSV</a></article>
+      <article class="card"><h3>車色與紋理</h3><p>各點代表一種車色。橫軸為 f/22 影像的平均紋理量。</p><canvas id="texture-chart" role="img" aria-label="紋理量與 RMSE 散點圖"></canvas><a href="texture.csv" download>車色紋理 CSV</a></article>
+    </div>
+  </section>
+  <section id="gallery">
+    <p class="eyebrow">VIDEO GALLERY</p><h2>情境影片</h2>
+    <p>影片將 CARLA 離散影像依距離或車色重排。時間軸呈現資料集順序，沒有連續行駛的時間真值。</p>
+    <div class="grid three" id="videos"></div>
+    <div class="grid two applications">
+      <article class="card"><h3>停車入庫</h3><p>以固定相機與車種建立校正，向駕駛顯示近距離間隔。停車場渲染與實車驗證待進行。</p></article>
+      <article class="card"><h3>倉儲 AGV</h3><p>規劃在 1–3 m 以固定鏡頭估測目標間隔。倉儲渲染、曝光變動與跨目標校正待驗證。</p></article>
+    </div>
+  </section>
+  <section id="limits">
+    <p class="eyebrow">LIMITATIONS</p><h2>哪些條件容易失準？</h2>
+    <div class="grid three" id="failures"></div>
+    <p class="note">逆光與反光尚無對應量測。實體相機實驗列於後續實驗 M6。</p>
+  </section>
+  <section id="speed">
+    <p class="eyebrow">RUNTIME</p><h2>推論速度</h2>
+    <p>RTX 5080 + Intel Core Ultra 7 265K，紅消防車 30 張影像，沿用既有遮罩。下表的 FPS 與延遲中位數各自取自量測來源。</p>
+    <div class="card"><div class="table-scroll"><table id="timing"></table></div><p id="mask-timing"></p></div>
+  </section>
+</main>
+<footer><div><strong>CA-DFDS</strong> <span>CARLA 研究展示</span></div><div><a href="https://github.com/DreamerForJay/CA-DFDS-finals/blob/main/docs/NEXT_EXPERIMENTS.md">後續實驗 ↗</a><a href="#top">回頁首 ↑</a></div></footer>
+</body>
+</html>
